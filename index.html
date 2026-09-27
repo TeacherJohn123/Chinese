@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文華國小五年級 - 字音字形線上特訓</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <div class="max-w-xl mx-auto p-6 w-full mt-10">
+        <header class="text-center mb-6">
+            <h1 class="text-xl font-bold text-indigo-600">🏫 文華國小五年級國語文競賽特訓</h1>
+            <p class="text-xs text-slate-500 mt-1">乙部：字音部分線上練習</p>
+        </header>
+
+        <!-- 測驗主卡片 -->
+        <div id="quiz-card" class="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-slate-200">
+            <div class="flex justify-between text-xs font-semibold text-slate-400 mb-4">
+                <span id="question-progress">題目 1 / 3</span>
+                <span id="question-category" class="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded">字音辨正</span>
+            </div>
+            
+            <h2 id="question-title" class="text-base font-bold mb-6 text-slate-700">載入中...</h2>
+            
+            <div id="options-container" class="space-y-3">
+                <!-- 選項按鈕會透過 JS 動態產生 -->
+            </div>
+
+            <div id="result-feedback" class="mt-4 hidden p-3 rounded-xl text-sm"></div>
+        </div>
+
+        <!-- 下一題按鈕 -->
+        <div class="flex justify-end">
+            <button id="next-btn" onclick="nextQuestion()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-medium hidden shadow-md transition">
+                下一題 ➔
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 模擬從圖片一萃取出的題庫資料
+        const quizData = [
+            {
+                category: "字音部分",
+                question: "請選出「基（　）蜜」的正確注音：",
+                options: ["ㄐㄧˋ ㄇㄧˋ", "ㄐㄧ ㄇㄧˋ", "ㄑㄧˊ ㄇㄧˋ", "ㄑㄧ ㄇㄧˋ"],
+                answer: 1,
+                explanation: "「基蜜」為字音字形練習詞彙，正確音讀為「ㄐㄧ ㄇㄧˋ」。"
+            },
+            {
+                category: "字音部分",
+                question: "請選出「（　）基」的正確注音：",
+                options: ["ㄓㄤˋ ㄐㄧ", "ㄫˋ ㄐㄧ", "ㄗㄤ ㄐㄧ", "ㄘㄤ ㄐㄧ"],
+                answer: 0,
+                explanation: "請特別留意字音與聲調的正確拼讀。"
+            },
+            {
+                category: "字音部分",
+                question: "請選出「杖（　）」的正確注音：",
+                options: ["ㄓㄤˋ", "ㄫˋ", "ㄘㄤˋ", "ㄗㄤˋ"],
+                answer: 0,
+                explanation: "「杖」的正確注音為「ㄓㄤˋ」。"
+            }
+        ];
+
+        let currentIdx = 0;
+        let score = 0;
+        let answered = false;
+
+        function loadQuestion() {
+            answered = false;
+            const q = quizData[currentIdx];
+            document.getElementById('question-progress').innerText = `題目 ${currentIdx + 1} / ${quizData.length}`;
+            document.getElementById('question-category').innerText = q.category;
+            document.getElementById('question-title').innerText = q.question;
+            
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-3.5 rounded-xl border border-slate-200 hover:bg-indigo-50 hover:border-indigo-300 transition text-slate-700 font-medium text-sm flex items-center";
+                btn.innerHTML = `<span class="w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs flex items-center justify-center mr-3 font-bold">${String.fromCharCode(65 + idx)}</span> ${opt}`;
+                btn.onclick = () => selectOption(idx);
+                container.appendChild(btn);
+            });
+
+            document.getElementById('result-feedback').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+        }
+
+        function selectOption(selectedIdx) {
+            if (answered) return;
+            answered = true;
+
+            const q = quizData[currentIdx];
+            const feedback = document.getElementById('result-feedback');
+            feedback.classList.remove('hidden');
+
+            if (selectedIdx === q.answer) {
+                feedback.className = "mt-4 p-3 rounded-xl text-sm bg-emerald-50 text-emerald-700 border border-emerald-200";
+                feedback.innerHTML = `<strong>✨ 答對了！</strong> ${q.explanation}`;
+                score++;
+            } else {
+                feedback.className = "mt-4 p-3 rounded-xl text-sm bg-rose-50 text-rose-700 border border-rose-200";
+                feedback.innerHTML = `<strong>❌ 答錯了。</strong> 正確答案是 ${String.fromCharCode(65 + q.answer)}。${q.explanation}`;
+            }
+
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentIdx++;
+            if (currentIdx < quizData.length) {
+                loadQuestion();
+            } else {
+                document.getElementById('quiz-card').innerHTML = `
+                    <div class="text-center py-8">
+                        <h2 class="text-2xl font-bold text-slate-700 mb-2">🎉 測驗完成！</h2>
+                        <p class="text-base text-slate-600 mb-6">你的總得分：<span class="text-indigo-600 font-bold text-xl">${score}</span> / ${quizData.length}</p>
+                        <button onclick="location.reload()" class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-medium shadow-md hover:bg-indigo-700 transition">重新測驗</button>
+                    </div>
+                `;
+                document.getElementById('next-btn').classList.add('hidden');
+            }
+        }
+
+        loadQuestion();
+    </script>
+</body>
+</html>
