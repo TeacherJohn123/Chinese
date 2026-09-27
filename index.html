@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文華國小五年級 - 字音字形線上特訓</title>
+    <title>文華國小五年級 - 國字字形線上特訓</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -12,14 +12,14 @@
     <div class="max-w-xl mx-auto p-6 w-full mt-10">
         <header class="text-center mb-6">
             <h1 class="text-xl font-bold text-indigo-600">🏫 文華國小五年級國語文競賽特訓</h1>
-            <p class="text-xs text-slate-500 mt-1">乙部：字音部分線上練習</p>
+            <p class="text-xs text-slate-500 mt-1">甲部：字形辨正選擇練習</p>
         </header>
 
         <!-- 測驗主卡片 -->
         <div id="quiz-card" class="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-slate-200">
             <div class="flex justify-between text-xs font-semibold text-slate-400 mb-4">
                 <span id="question-progress">題目 1 / 3</span>
-                <span id="question-category" class="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded">字音辨正</span>
+                <span id="question-category" class="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded">字形辨正</span>
             </div>
             
             <h2 id="question-title" class="text-base font-bold mb-6 text-slate-700">載入中...</h2>
@@ -40,28 +40,30 @@
     </div>
 
     <script>
-        // 模擬從圖片一萃取出的題庫資料
+        // 模擬從圖片二（甲部國字）萃取出的字形選擇題題庫
         const quizData = [
             {
-                category: "字音部分",
-                question: "請選出「基（　）蜜」的正確注音：",
-                options: ["ㄐㄧˋ ㄇㄧˋ", "ㄐㄧ ㄇㄧˋ", "ㄑㄧˊ ㄇㄧˋ", "ㄑㄧ ㄇㄧˋ"],
+                category: "字形辨正（國字）",
+                question: "請選出用字完全正確的詞語：「車輛行駛在高速公路上，應保持安全距（　）。」",
+                options: ["離", "離 (注意部首)", "離 (其他錯字)", "離 (其他錯字)"], // 實務上選項會放不同國字選項
+                // 為了方便示範，我們設計標準的國字選項：
+                options: ["離", "籬", "灕", "蘺"],
+                answer: 0,
+                explanation: "「距離」的「離」正確寫法為部首「隹」部，切勿與「籬（竹籬）」搞混。"
+            },
+            {
+                category: "字形辨正（國字）",
+                question: "下列各組詞語「ㄊㄨˊ」的用字，哪一個完全正確？",
+                options: ["徒勞無功", "塗勞無功", "途勞無功", "徒勞無工"],
+                answer: 0,
+                explanation: "「徒勞無功」指白白付出勞力而沒有功效，正確用字為「徒」。"
+            },
+            {
+                category: "字形辨正（國字）",
+                question: "「（　）而不捨」的正確國字為何？",
+                options: ["契", "鍥", "楔", "絜"],
                 answer: 1,
-                explanation: "「基蜜」為字音字形練習詞彙，正確音讀為「ㄐㄧ ㄇㄧˋ」。"
-            },
-            {
-                category: "字音部分",
-                question: "請選出「（　）基」的正確注音：",
-                options: ["ㄓㄤˋ ㄐㄧ", "ㄫˋ ㄐㄧ", "ㄗㄤ ㄐㄧ", "ㄘㄤ ㄐㄧ"],
-                answer: 0,
-                explanation: "請特別留意字音與聲調的正確拼讀。"
-            },
-            {
-                category: "字音部分",
-                question: "請選出「杖（　）」的正確注音：",
-                options: ["ㄓㄤˋ", "ㄫˋ", "ㄘㄤˋ", "ㄗㄤˋ"],
-                answer: 0,
-                explanation: "「杖」的正確注音為「ㄓㄤˋ」。"
+                explanation: "「鍥而不捨」比喻做事有恆心，堅持到底。注意「鍥」為金字旁。"
             }
         ];
 
