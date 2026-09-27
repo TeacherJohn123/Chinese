@@ -3,30 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文華國小五年級 - 國字字形線上特訓</title>
+    <title>文華國小五年級 - 國語文競賽線上特訓</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between">
 
-    <div class="max-w-xl mx-auto p-6 w-full mt-10">
+    <div class="max-w-xl mx-auto p-6 w-full mt-6">
         <header class="text-center mb-6">
             <h1 class="text-xl font-bold text-indigo-600">🏫 文華國小五年級國語文競賽特訓</h1>
-            <p class="text-xs text-slate-500 mt-1">甲部：字形辨正選擇練習</p>
+            <p class="text-xs text-slate-500 mt-1">雲端題庫即時同步練習網</p>
+            
+            <!-- 模式切換按鈕 -->
+            <div class="flex justify-center gap-3 mt-4">
+                <button onclick="changeMode('注音')" id="btn-zhuyin" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow">注音特訓</button>
+                <button onclick="changeMode('國字')" id="btn-guazi" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-600 border border-slate-200">國字字形特訓</button>
+            </div>
         </header>
 
+        <!-- 載入中狀態 -->
+        <div id="loading" class="text-center py-12 text-slate-400">正在從雲端載入題庫中...</div>
+
         <!-- 測驗主卡片 -->
-        <div id="quiz-card" class="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-slate-200">
+        <div id="quiz-card" class="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-slate-200 hidden">
             <div class="flex justify-between text-xs font-semibold text-slate-400 mb-4">
-                <span id="question-progress">題目 1 / 3</span>
-                <span id="question-category" class="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded">字形辨正</span>
+                <span id="question-progress">題目 1 / 1</span>
+                <span id="question-category" class="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded">類別</span>
             </div>
             
-            <h2 id="question-title" class="text-base font-bold mb-6 text-slate-700">載入中...</h2>
+            <h2 id="question-title" class="text-base font-bold mb-6 text-slate-700"></h2>
             
-            <div id="options-container" class="space-y-3">
-                <!-- 選項按鈕會透過 JS 動態產生 -->
-            </div>
+            <div id="options-container" class="space-y-3"></div>
 
             <div id="result-feedback" class="mt-4 hidden p-3 rounded-xl text-sm"></div>
         </div>
@@ -40,48 +47,60 @@
     </div>
 
     <script>
-        // 模擬從圖片二（甲部國字）萃取出的字形選擇題題庫
-        const quizData = [
-            {
-                category: "字形辨正（國字）",
-                question: "請選出用字完全正確的詞語：「車輛行駛在高速公路上，應保持安全距（　）。」",
-                options: ["離", "離 (注意部首)", "離 (其他錯字)", "離 (其他錯字)"], // 實務上選項會放不同國字選項
-                // 為了方便示範，我們設計標準的國字選項：
-                options: ["離", "籬", "灕", "蘺"],
-                answer: 0,
-                explanation: "「距離」的「離」正確寫法為部首「隹」部，切勿與「籬（竹籬）」搞混。"
-            },
-            {
-                category: "字形辨正（國字）",
-                question: "下列各組詞語「ㄊㄨˊ」的用字，哪一個完全正確？",
-                options: ["徒勞無功", "塗勞無功", "途勞無功", "徒勞無工"],
-                answer: 0,
-                explanation: "「徒勞無功」指白白付出勞力而沒有功效，正確用字為「徒」。"
-            },
-            {
-                category: "字形辨正（國字）",
-                question: "「（　）而不捨」的正確國字為何？",
-                options: ["契", "鍥", "楔", "絜"],
-                answer: 1,
-                explanation: "「鍥而不捨」比喻做事有恆心，堅持到底。注意「鍥」為金字旁。"
-            }
-        ];
+        // 已自動串接您的 Google Apps Script 網址
+        const API_URL = "https://script.google.com/macros/s/AKfycby730wJM6SxtCjnu_1abKeIosFmQPNlNDe5znncIpXkHYaBSgTJ9by9KTLvyPQh2Z5QiA/exec";
 
+        let quizData = [];
         let currentIdx = 0;
         let score = 0;
         let answered = false;
 
+        async function changeMode(sheetName) {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('quiz-card').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+
+            // 切換上方按鈕樣式
+            if(sheetName === '注音') {
+                document.getElementById('btn-zhuyin').className = "px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow";
+                document.getElementById('btn-guazi').className = "px-4 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-600 border border-slate-200";
+            } else {
+                document.getElementById('btn-guazi').className = "px-4 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow";
+                document.getElementById('btn-zhuyin').className = "px-4 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-600 border border-slate-200";
+            }
+
+            try {
+                const response = await fetch(`${API_URL}?sheet=${sheetName}`);
+                quizData = await response.json();
+                
+                if (quizData.error || quizData.length === 0) {
+                    document.getElementById('loading').innerText = "目前該分類沒有題目，請確認 Google 試算表分頁名稱與內容。";
+                    return;
+                }
+
+                currentIdx = 0;
+                score = 0;
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('quiz-card').classList.remove('hidden');
+                loadQuestion();
+            } catch (error) {
+                document.getElementById('loading').innerText = "載入題庫失敗，請檢查網路連線或 Apps Script 部署權限。";
+            }
+        }
+
         function loadQuestion() {
+            if (quizData.length === 0) return;
             answered = false;
             const q = quizData[currentIdx];
             document.getElementById('question-progress').innerText = `題目 ${currentIdx + 1} / ${quizData.length}`;
-            document.getElementById('question-category').innerText = q.category;
+            document.getElementById('question-category').innerText = q.category || "練習題";
             document.getElementById('question-title').innerText = q.question;
             
             const container = document.getElementById('options-container');
             container.innerHTML = '';
             
             q.options.forEach((opt, idx) => {
+                if (!opt) return; // 避免空選項
                 const btn = document.createElement('button');
                 btn.className = "w-full text-left p-3.5 rounded-xl border border-slate-200 hover:bg-indigo-50 hover:border-indigo-300 transition text-slate-700 font-medium text-sm flex items-center";
                 btn.innerHTML = `<span class="w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-xs flex items-center justify-center mr-3 font-bold">${String.fromCharCode(65 + idx)}</span> ${opt}`;
@@ -103,11 +122,11 @@
 
             if (selectedIdx === q.answer) {
                 feedback.className = "mt-4 p-3 rounded-xl text-sm bg-emerald-50 text-emerald-700 border border-emerald-200";
-                feedback.innerHTML = `<strong>✨ 答對了！</strong> ${q.explanation}`;
+                feedback.innerHTML = `<strong>✨ 答對了！</strong> ${q.explanation || ''}`;
                 score++;
             } else {
                 feedback.className = "mt-4 p-3 rounded-xl text-sm bg-rose-50 text-rose-700 border border-rose-200";
-                feedback.innerHTML = `<strong>❌ 答錯了。</strong> 正確答案是 ${String.fromCharCode(65 + q.answer)}。${q.explanation}`;
+                feedback.innerHTML = `<strong>❌ 答錯了。</strong> 正確答案是 ${String.fromCharCode(65 + q.answer)}。${q.explanation || ''}`;
             }
 
             document.getElementById('next-btn').classList.remove('hidden');
@@ -122,14 +141,15 @@
                     <div class="text-center py-8">
                         <h2 class="text-2xl font-bold text-slate-700 mb-2">🎉 測驗完成！</h2>
                         <p class="text-base text-slate-600 mb-6">你的總得分：<span class="text-indigo-600 font-bold text-xl">${score}</span> / ${quizData.length}</p>
-                        <button onclick="location.reload()" class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-medium shadow-md hover:bg-indigo-700 transition">重新測驗</button>
+                        <button onclick="changeMode('注音')" class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-medium shadow-md hover:bg-indigo-700 transition">回到首頁重新測驗</button>
                     </div>
                 `;
                 document.getElementById('next-btn').classList.add('hidden');
             }
         }
 
-        loadQuestion();
+        // 網頁開啟時預設載入注音
+        changeMode('注音');
     </script>
 </body>
 </html>
