@@ -28,7 +28,7 @@
         <div id="quiz-card" class="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-slate-200 hidden">
             <div class="flex justify-between text-xs font-semibold text-slate-400 mb-4">
                 <span id="question-progress">題目 1 / 1</span>
-                <!-- 修正為「字形辨正」 -->
+                <!-- 已將錯字「辯」更正為「辨」 -->
                 <span id="question-category" class="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded">字形辨正</span>
             </div>
             
@@ -71,7 +71,6 @@
             }
 
             try {
-                // 傳遞分頁名稱參數
                 const response = await fetch(`${API_URL}?sheet=${sheetName}`);
                 quizData = await response.json();
                 
@@ -95,6 +94,7 @@
             answered = false;
             const q = quizData[currentIdx];
             document.getElementById('question-progress').innerText = `題目 ${currentIdx + 1} / ${quizData.length}`;
+            // 優先讀取試算表中的分類，若無則顯示「字形辨正」
             document.getElementById('question-category').innerText = q.category || "字形辨正";
             document.getElementById('question-title').innerText = q.question;
             
