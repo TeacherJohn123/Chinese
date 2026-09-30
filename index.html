@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文華國小五年級 - 國語文競賽線上特訓 v2.1 (極速快取版)</title>
+    <title>文華國小五年級 - 國語文競賽線上特訓 v3.0 (手寫自評版)</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -12,7 +12,7 @@
     <div class="max-w-3xl mx-auto p-8 w-full mt-8">
         <header class="text-center mb-8">
             <h1 class="text-3xl font-bold text-indigo-600">🏫 文華國小五年級國語文競賽特訓</h1>
-            <p class="text-lg text-slate-500 mt-2">雲端題庫即時同步練習網 v2.1 (極速快取版)</p>
+            <p class="text-lg text-slate-500 mt-2">雲端題庫即時同步練習網 v3.0 (手寫自評版)</p>
             
             <!-- 主導覽按鈕 (模式切換與功能面板) -->
             <div class="flex flex-wrap justify-center gap-3 mt-6">
@@ -24,10 +24,11 @@
 
         <!-- ================= 畫面一：線上特訓（分項選擇與單元闖關） ================= -->
         <div id="view-practice" class="space-y-6">
-            <!-- 分類選擇 (注音 / 國字) -->
-            <div class="flex justify-center gap-4">
-                <button onclick="changeCategory('注音')" id="btn-zhuyin" class="px-6 py-3 rounded-2xl text-lg font-bold bg-indigo-600 text-white shadow-lg">注音特訓</button>
-                <button onclick="changeCategory('國字')" id="btn-guazi" class="px-6 py-3 rounded-2xl text-lg font-bold bg-white text-slate-600 border-2 border-slate-200">國字字形特訓</button>
+            <!-- 分類選擇 (注音 / 國字 / 手寫) -->
+            <div class="flex justify-center gap-4 flex-wrap">
+                <button onclick="changeCategory('注音', false, false)" id="btn-zhuyin" class="px-6 py-3 rounded-2xl text-lg font-bold bg-indigo-600 text-white shadow-lg transition">注音特訓 (選擇題)</button>
+                <button onclick="changeCategory('國字', false, false)" id="btn-guazi" class="px-6 py-3 rounded-2xl text-lg font-bold bg-white text-slate-600 border-2 border-slate-200 transition">國字字形 (選擇題)</button>
+                <button onclick="changeCategory('國字', false, true)" id="btn-handwriting" class="px-6 py-3 rounded-2xl text-lg font-bold bg-white text-slate-600 border-2 border-slate-200 transition">看注音寫國字 (手寫)</button>
             </div>
 
             <!-- 載入中狀態 -->
@@ -52,12 +53,30 @@
                 </div>
                 
                 <!-- 特大題目字體 -->
-                <h2 id="question-title" class="text-3xl md:text-4xl font-bold mb-10 text-slate-700 leading-relaxed text-center"></h2>
+                <h2 id="question-title" class="text-4xl md:text-5xl font-bold mb-10 text-slate-700 leading-relaxed text-center"></h2>
                 
-                <!-- 2x2 田字格選項排版 -->
+                <!-- 2x2 田字格選項排版 (選擇題模式) -->
                 <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
 
-                <div id="result-feedback" class="mt-8 hidden p-6 rounded-2xl text-2xl font-bold"></div>
+                <!-- 手寫模式專屬區塊 -->
+                <div id="handwriting-container" class="hidden flex flex-col items-center gap-6 mt-4">
+                    <button id="btn-show-answer" onclick="showAnswer()" class="bg-amber-500 hover:bg-amber-600 text-white px-10 py-5 rounded-2xl font-bold text-2xl shadow-lg transition w-full md:w-auto">
+                        🔍 顯示解答，自己對答案
+                    </button>
+
+                    <div id="handwriting-answer-area" class="hidden flex flex-col items-center gap-6 w-full">
+                        <div class="text-xl text-slate-500 font-bold">正確的國字是：</div>
+                        <div id="handwriting-correct-answer" class="text-7xl font-bold text-emerald-600 bg-emerald-50 px-16 py-8 rounded-3xl border-4 border-emerald-200 shadow-inner"></div>
+
+                        <div class="text-lg text-slate-600 mt-4 font-bold">請誠實自評：</div>
+                        <div id="handwriting-eval-buttons" class="flex gap-4 w-full justify-center">
+                            <button onclick="selfEvaluate(true)" class="flex-1 max-w-[220px] bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-4 rounded-2xl font-bold text-xl shadow-lg transition">✨ 我寫對了</button>
+                            <button onclick="selfEvaluate(false)" class="flex-1 max-w-[220px] bg-rose-500 hover:bg-rose-600 text-white px-6 py-4 rounded-2xl font-bold text-xl shadow-lg transition">❌ 我寫錯了</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="result-feedback" class="mt-8 hidden p-6 rounded-2xl text-2xl font-bold text-center"></div>
             </div>
 
             <!-- 下一題與返回按鈕 -->
@@ -80,7 +99,7 @@
                     <button onclick="clearMistakes()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2.5 rounded-xl font-bold transition text-sm">清空錯題本</button>
                 </div>
             </div>
-            <p class="text-slate-500 text-sm">這裡會長期記錄您在各單元答錯的題目，答對後可手動或系統自動幫您複習消滅！</p>
+            <p class="text-slate-500 text-sm">這裡會長期記錄您在各單元答錯的題目，手寫模式或選擇題模式的錯題都會被記錄下來！</p>
             <div id="mistakes-list-container" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
                 <!-- 動態載入錯題列表 -->
             </div>
@@ -102,8 +121,9 @@
         const API_URL = "https://script.google.com/macros/s/AKfycby730wJM6SxtCjnu_1abKeIosFmQPNlNDe5znncIpXkHYaBSgTJ9by9KTLvyPQh2Z5QiA/exec";
 
         let currentCategoryName = '注音';
+        let isHandwritingMode = false; 
         let rawCategoryData = []; 
-        let unitsList = [];       
+        let unitsList = [];        
         let currentUnitIdx = 0;   
         let quizData = [];        
         let currentIdx = 0;
@@ -114,7 +134,7 @@
         // 頁面載入初始化
         window.onload = function() {
             updateMistakeBadge();
-            changeCategory('注音');
+            changeCategory('注音', false, false);
         };
 
         // 切換三大主頁籤
@@ -141,7 +161,6 @@
             }
         }
 
-        // Fisher-Yates 隨機打亂函數
         function shuffleArray(array) {
             let arr = [...array];
             for (let i = arr.length - 1; i > 0; i--) {
@@ -151,39 +170,42 @@
             return arr;
         }
 
-        // 切換大分類 (注音 / 國字) - 導入快取機制
-        async function changeCategory(sheetName, forceRefresh = false) {
+        // 切換大分類 (注音 / 國字 / 手寫)
+        async function changeCategory(sheetName, forceRefresh = false, handwriting = false) {
             currentCategoryName = sheetName;
+            isHandwritingMode = handwriting;
             isMistakeMode = false;
+            
             document.getElementById('unit-selection-card').classList.add('hidden');
             document.getElementById('quiz-card').classList.add('hidden');
             document.getElementById('next-btn').classList.add('hidden');
             document.getElementById('back-to-units-btn').classList.add('hidden');
 
+            // 更新按鈕樣式
+            document.getElementById('btn-zhuyin').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-white text-slate-600 border-2 border-slate-200 transition";
+            document.getElementById('btn-guazi').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-white text-slate-600 border-2 border-slate-200 transition";
+            document.getElementById('btn-handwriting').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-white text-slate-600 border-2 border-slate-200 transition";
+
             if(sheetName === '注音') {
-                document.getElementById('btn-zhuyin').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-indigo-600 text-white shadow-lg";
-                document.getElementById('btn-guazi').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-white text-slate-600 border-2 border-slate-200";
-            } else {
-                document.getElementById('btn-guazi').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-indigo-600 text-white shadow-lg";
-                document.getElementById('btn-zhuyin').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-white text-slate-600 border-2 border-slate-200";
+                document.getElementById('btn-zhuyin').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-indigo-600 text-white shadow-lg transition";
+            } else if (sheetName === '國字' && !handwriting) {
+                document.getElementById('btn-guazi').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-indigo-600 text-white shadow-lg transition";
+            } else if (sheetName === '國字' && handwriting) {
+                document.getElementById('btn-handwriting').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-indigo-600 text-white shadow-lg transition";
             }
 
             const cacheKey = `wenhua_cache_${sheetName}`;
             let rawData = null;
 
-            // 1. 如果不是強制重新整理，先嘗試從 localStorage 讀取快取
             if (!forceRefresh) {
                 try {
                     const cachedData = localStorage.getItem(cacheKey);
-                    if (cachedData) {
-                        rawData = JSON.parse(cachedData);
-                    }
+                    if (cachedData) rawData = JSON.parse(cachedData);
                 } catch (e) {
                     console.log("讀取快取失敗，將重新從雲端抓取");
                 }
             }
 
-            // 2. 如果快取沒有資料，才向雲端發送請求
             if (!rawData || rawData.length === 0) {
                 document.getElementById('loading').classList.remove('hidden');
                 try {
@@ -191,19 +213,16 @@
                     rawData = await response.json();
                     
                     if (rawData.error || rawData.length === 0) {
-                        document.getElementById('loading').innerText = "目前該分類沒有題目，請確認 Google 試算表分頁名稱與內容。";
+                        document.getElementById('loading').innerText = "目前該分類沒有題目，請確認 Google 試算表內容。";
                         return;
                     }
-
-                    // 存入 localStorage 快取
                     localStorage.setItem(cacheKey, JSON.stringify(rawData));
                 } catch (error) {
-                    document.getElementById('loading').innerText = "載入題庫失敗，請檢查網路連線或 Apps Script 部署權限。";
+                    document.getElementById('loading').innerText = "載入題庫失敗，請檢查網路連線。";
                     return;
                 }
                 document.getElementById('loading').classList.add('hidden');
             } else {
-                // 有快取時直接隱藏讀取動畫，達到秒開效果
                 document.getElementById('loading').classList.add('hidden');
             }
 
@@ -211,13 +230,11 @@
             buildUnits(rawData);
         }
 
-        // 強制重新整理快取（當老師更新雲端題目時使用）
         function refreshCategoryCache() {
             localStorage.removeItem(`wenhua_cache_${currentCategoryName}`);
-            changeCategory(currentCategoryName, true);
+            changeCategory(currentCategoryName, true, isHandwritingMode);
         }
 
-        // 將題庫每 25 題切分為一個單元
         function buildUnits(data) {
             unitsList = [];
             const chunkSize = 25;
@@ -227,7 +244,10 @@
 
             const unitGrid = document.getElementById('unit-grid');
             unitGrid.innerHTML = '';
-            document.getElementById('current-category-title').innerText = `【${currentCategoryName}特訓】選擇練習單元`;
+            
+            // 標題顯示目前模式
+            let modeTitle = (currentCategoryName === '注音') ? '注音' : (isHandwritingMode ? '看注音寫國字(手寫)' : '國字字形');
+            document.getElementById('current-category-title').innerText = `【${modeTitle}特訓】選擇練習單元`;
 
             unitsList.forEach((unit, idx) => {
                 const startNum = idx * chunkSize + 1;
@@ -249,7 +269,6 @@
             document.getElementById('unit-selection-card').classList.remove('hidden');
         }
 
-        // 開始某一單元的測驗
         function startUnitQuiz(unitIdx) {
             currentUnitIdx = unitIdx;
             isMistakeMode = false;
@@ -263,7 +282,6 @@
             loadQuestion();
         }
 
-        // 返回單元選單
         function returnToUnits() {
             document.getElementById('quiz-card').classList.add('hidden');
             document.getElementById('next-btn').classList.add('hidden');
@@ -271,32 +289,87 @@
             document.getElementById('unit-selection-card').classList.remove('hidden');
         }
 
-        // 載入題目
+        // 載入題目（包含模式判斷）
         function loadQuestion() {
             if (quizData.length === 0) return;
             answered = false;
             const q = quizData[currentIdx];
-            document.getElementById('question-progress').innerText = `題目 ${currentIdx + 1} / ${quizData.length}`;
-            document.getElementById('question-category').innerText = isMistakeMode ? "錯題特訓模式" : (q.category || "字形辨正");
-            document.getElementById('question-title').innerText = q.question;
             
-            const container = document.getElementById('options-container');
-            container.innerHTML = '';
-            
-            q.options.forEach((opt, idx) => {
-                if (!opt) return; 
-                const btn = document.createElement('button');
-                btn.className = "w-full p-6 rounded-2xl border-2 border-slate-200 hover:bg-indigo-50 hover:border-indigo-300 transition text-slate-700 font-bold text-2xl flex items-center justify-center shadow-md gap-4";
-                btn.innerHTML = `<span class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 text-base flex items-center justify-center font-bold shrink-0">${String.fromCharCode(65 + idx)}</span> <span class="text-3xl">${opt}</span>`;
-                btn.onclick = () => selectOption(idx);
-                container.appendChild(btn);
-            });
+            // 判斷此題是否為手寫模式 (如果是錯題本，則根據紀錄當時的模式)
+            const currentIsHandwriting = isMistakeMode ? q.isHandwriting : isHandwritingMode;
 
+            document.getElementById('question-progress').innerText = `題目 ${currentIdx + 1} / ${quizData.length}`;
+            let catText = isMistakeMode ? "錯題特訓" : (q.category || "字形辨正");
+            if (currentIsHandwriting) catText += " (手寫)";
+            document.getElementById('question-category').innerText = catText;
+            
+            document.getElementById('question-title').innerText = q.question;
             document.getElementById('result-feedback').classList.add('hidden');
             document.getElementById('next-btn').classList.add('hidden');
+
+            if (currentIsHandwriting) {
+                // 手寫模式設定
+                document.getElementById('options-container').classList.add('hidden');
+                document.getElementById('handwriting-container').classList.remove('hidden');
+                
+                document.getElementById('btn-show-answer').classList.remove('hidden');
+                document.getElementById('handwriting-answer-area').classList.add('hidden');
+                document.getElementById('handwriting-eval-buttons').classList.remove('hidden');
+            } else {
+                // 選擇題模式設定
+                document.getElementById('handwriting-container').classList.add('hidden');
+                document.getElementById('options-container').classList.remove('hidden');
+                
+                const container = document.getElementById('options-container');
+                container.innerHTML = '';
+                
+                q.options.forEach((opt, idx) => {
+                    if (!opt) return; 
+                    const btn = document.createElement('button');
+                    btn.className = "w-full p-6 rounded-2xl border-2 border-slate-200 hover:bg-indigo-50 hover:border-indigo-300 transition text-slate-700 font-bold text-2xl flex items-center justify-center shadow-md gap-4";
+                    btn.innerHTML = `<span class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 text-base flex items-center justify-center font-bold shrink-0">${String.fromCharCode(65 + idx)}</span> <span class="text-3xl">${opt}</span>`;
+                    btn.onclick = () => selectOption(idx);
+                    container.appendChild(btn);
+                });
+            }
         }
 
-        // 選擇答案
+        // ================= 手寫模式專屬功能 =================
+        function showAnswer() {
+            document.getElementById('btn-show-answer').classList.add('hidden');
+            document.getElementById('handwriting-answer-area').classList.remove('hidden');
+            
+            const q = quizData[currentIdx];
+            // 抓取正確選項作為國字解答
+            document.getElementById('handwriting-correct-answer').innerText = q.options[q.answer];
+        }
+
+        function selfEvaluate(isCorrect) {
+            if (answered) return;
+            answered = true;
+
+            const q = quizData[currentIdx];
+            const feedback = document.getElementById('result-feedback');
+            
+            // 隱藏評分按鈕，避免重複點擊
+            document.getElementById('handwriting-eval-buttons').classList.add('hidden');
+            feedback.classList.remove('hidden');
+
+            if (isCorrect) {
+                feedback.className = "mt-4 p-6 rounded-2xl text-2xl font-bold bg-emerald-50 text-emerald-700 border-2 border-emerald-200";
+                feedback.innerHTML = `<strong>✨ 太棒了，你寫對了！</strong> ${q.explanation || ''}`;
+                score++;
+                if (isMistakeMode) removeMistakeFromStorage(q);
+            } else {
+                feedback.className = "mt-4 p-6 rounded-2xl text-2xl font-bold bg-rose-50 text-rose-700 border-2 border-rose-200";
+                feedback.innerHTML = `<strong>❌ 沒關係，記下來下次就不會錯了。</strong> ${q.explanation || ''}`;
+                saveMistakeToStorage(q);
+            }
+
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        // ================= 選擇題模式專屬功能 =================
         function selectOption(selectedIdx) {
             if (answered) return;
             answered = true;
@@ -309,28 +382,26 @@
                 feedback.className = "mt-8 p-6 rounded-2xl text-2xl font-bold bg-emerald-50 text-emerald-700 border-2 border-emerald-200";
                 feedback.innerHTML = `<strong>✨ 答對了！</strong> ${q.explanation || ''}`;
                 score++;
-
-                if (isMistakeMode) {
-                    removeMistakeFromStorage(q);
-                }
+                if (isMistakeMode) removeMistakeFromStorage(q);
             } else {
                 feedback.className = "mt-8 p-6 rounded-2xl text-2xl font-bold bg-rose-50 text-rose-700 border-2 border-rose-200";
                 feedback.innerHTML = `<strong>❌ 答錯了。</strong> 正確答案是 ${String.fromCharCode(65 + q.answer)}。${q.explanation || ''}`;
-
                 saveMistakeToStorage(q);
             }
 
             document.getElementById('next-btn').classList.remove('hidden');
         }
 
-        // 下一題
+        // ================= 通用下一步邏輯 =================
         function nextQuestion() {
             currentIdx++;
             if (currentIdx < quizData.length) {
                 loadQuestion();
             } else {
+                let modeTitle = (currentCategoryName === '注音') ? '注音' : (isHandwritingMode ? '手寫練字' : '國字字形');
+                
                 if (!isMistakeMode) {
-                    saveHistoryToStorage(`${currentCategoryName} - 第 ${currentUnitIdx + 1} 單元`, score, quizData.length);
+                    saveHistoryToStorage(`${modeTitle} - 第 ${currentUnitIdx + 1} 單元`, score, quizData.length);
                 } else {
                     saveHistoryToStorage(`錯題特訓複習`, score, quizData.length);
                 }
@@ -338,8 +409,8 @@
                 document.getElementById('quiz-card').innerHTML = `
                     <div class="text-center py-12">
                         <h2 class="text-4xl font-bold text-slate-700 mb-4">🎉 測驗完成！</h2>
-                        <p class="text-2xl text-slate-600 mb-10">你的總得分：<span class="text-indigo-600 font-bold text-3xl">${score}</span> / ${quizData.length}</p>
-                        <div class="flex justify-center gap-4">
+                        <p class="text-2xl text-slate-600 mb-10">你的總得分：<span class="text-indigo-600 font-bold text-4xl">${score}</span> / ${quizData.length}</p>
+                        <div class="flex justify-center gap-4 flex-wrap">
                             <button onclick="switchMainTab('practice')" class="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-xl shadow-lg hover:bg-indigo-700 transition">回到單元列表</button>
                             <button onclick="switchMainTab('history')" class="bg-slate-200 text-slate-700 px-8 py-4 rounded-2xl font-bold text-xl shadow hover:bg-slate-300 transition">查看歷史記錄</button>
                         </div>
@@ -351,8 +422,7 @@
             }
         }
 
-        // ================= LocalStorage 長期記錄與快取管理 =================
-
+        // ================= 錯題本與學習歷程管理 =================
         function getStoredMistakes() {
             try {
                 const data = localStorage.getItem('wenhua_quiz_mistakes');
@@ -364,9 +434,13 @@
 
         function saveMistakeToStorage(q) {
             let mistakes = getStoredMistakes();
-            const exists = mistakes.some(item => item.question === q.question);
+            // 加入當前的答題模式紀錄
+            let qToSave = { ...q, isHandwriting: isHandwritingMode };
+            
+            // 避免同題目重複加入
+            const exists = mistakes.some(item => item.question === qToSave.question && item.isHandwriting === qToSave.isHandwriting);
             if (!exists) {
-                mistakes.push(q);
+                mistakes.push(qToSave);
                 localStorage.setItem('wenhua_quiz_mistakes', JSON.stringify(mistakes));
                 updateMistakeBadge();
             }
@@ -374,6 +448,7 @@
 
         function removeMistakeFromStorage(q) {
             let mistakes = getStoredMistakes();
+            // 不管是手寫還是選擇題，只要在錯題特訓答對，就消除該題目紀錄
             mistakes = mistakes.filter(item => item.question !== q.question);
             localStorage.setItem('wenhua_quiz_mistakes', JSON.stringify(mistakes));
             updateMistakeBadge();
@@ -406,15 +481,17 @@
 
             startBtn.classList.remove('hidden');
             mistakes.forEach((q, idx) => {
+                const modeTag = q.isHandwriting ? '<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs ml-2">手寫題</span>' : '';
+                
                 const div = document.createElement('div');
                 div.className = "p-5 rounded-2xl border-2 border-slate-100 bg-slate-50 flex flex-col gap-2";
                 div.innerHTML = `
                     <div class="flex justify-between items-start">
-                        <span class="font-bold text-indigo-600 text-sm">錯題 #${idx + 1} [${q.category || '字形辨正'}]</span>
+                        <span class="font-bold text-indigo-600 text-sm">錯題 #${idx + 1} [${q.category || '字形辨正'}] ${modeTag}</span>
                         <button onclick="deleteOneMistake('${q.question}')" class="text-rose-500 hover:text-rose-700 text-sm font-bold">刪除此題</button>
                     </div>
                     <div class="text-xl font-bold text-slate-700">${q.question}</div>
-                    <div class="text-sm text-slate-500">正確答案：${String.fromCharCode(65 + q.answer)} (${q.options[q.answer]})</div>
+                    <div class="text-sm text-slate-500">正確答案：${q.options[q.answer]}</div>
                 `;
                 container.appendChild(div);
             });
