@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文華國小五年級 - 國語文競賽線上特訓 v2.0</title>
+    <title>文華國小五年級 - 國語文競賽線上特訓 v2.1 (極速快取版)</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -12,7 +12,7 @@
     <div class="max-w-3xl mx-auto p-8 w-full mt-8">
         <header class="text-center mb-8">
             <h1 class="text-3xl font-bold text-indigo-600">🏫 文華國小五年級國語文競賽特訓</h1>
-            <p class="text-lg text-slate-500 mt-2">雲端題庫即時同步練習網 v2.0</p>
+            <p class="text-lg text-slate-500 mt-2">雲端題庫即時同步練習網 v2.1 (極速快取版)</p>
             
             <!-- 主導覽按鈕 (模式切換與功能面板) -->
             <div class="flex flex-wrap justify-center gap-3 mt-6">
@@ -35,7 +35,10 @@
 
             <!-- 25題單元選擇清單區 -->
             <div id="unit-selection-card" class="bg-white rounded-3xl shadow-xl p-8 border-2 border-slate-200 hidden">
-                <h3 id="current-category-title" class="text-2xl font-bold text-slate-700 mb-6 text-center">選擇練習單元（每 25 題為一個闖關單元）</h3>
+                <div class="flex justify-between items-center mb-6">
+                    <h3 id="current-category-title" class="text-2xl font-bold text-slate-700">選擇練習單元（每 25 題為一個闖關單元）</h3>
+                    <button onclick="refreshCategoryCache()" class="text-sm bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-xl transition font-bold" title="若老師有更新題目可點擊強制重新從雲端載入">🔄 重新整理題庫</button>
+                </div>
                 <div id="unit-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <!-- 動態產生單元按鈕 -->
                 </div>
@@ -99,14 +102,14 @@
         const API_URL = "https://script.google.com/macros/s/AKfycby730wJM6SxtCjnu_1abKeIosFmQPNlNDe5znncIpXkHYaBSgTJ9by9KTLvyPQh2Z5QiA/exec";
 
         let currentCategoryName = '注音';
-        let rawCategoryData = []; // 原始下載回來的完整題庫
-        let unitsList = [];       // 切分後的 25 題陣列群組
-        let currentUnitIdx = 0;   // 目前選中的單元索引
-        let quizData = [];        // 目前正在測驗的題目
+        let rawCategoryData = []; 
+        let unitsList = [];       
+        let currentUnitIdx = 0;   
+        let quizData = [];        
         let currentIdx = 0;
         let score = 0;
         let answered = false;
-        let isMistakeMode = false; // 是否為錯題特訓模式
+        let isMistakeMode = false; 
 
         // 頁面載入初始化
         window.onload = function() {
@@ -148,11 +151,10 @@
             return arr;
         }
 
-        // 切換大分類 (注音 / 國字)
-        async function changeCategory(sheetName) {
+        // 切換大分類 (注音 / 國字) - 導入快取機制
+        async function changeCategory(sheetName, forceRefresh = false) {
             currentCategoryName = sheetName;
             isMistakeMode = false;
-            document.getElementById('loading').classList.remove('hidden');
             document.getElementById('unit-selection-card').classList.add('hidden');
             document.getElementById('quiz-card').classList.add('hidden');
             document.getElementById('next-btn').classList.add('hidden');
@@ -166,21 +168,53 @@
                 document.getElementById('btn-zhuyin').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-white text-slate-600 border-2 border-slate-200";
             }
 
-            try {
-                const response = await fetch(`${API_URL}?sheet=${sheetName}`);
-                let rawData = await response.json();
-                
-                if (rawData.error || rawData.length === 0) {
-                    document.getElementById('loading').innerText = "目前該分類沒有題目，請確認 Google 試算表分頁名稱與內容。";
+            const cacheKey = `wenhua_cache_${sheetName}`;
+            let rawData = null;
+
+            // 1. 如果不是強制重新整理，先嘗試從 localStorage 讀取快取
+            if (!forceRefresh) {
+                try {
+                    const cachedData = localStorage.getItem(cacheKey);
+                    if (cachedData) {
+                        rawData = JSON.parse(cachedData);
+                    }
+                } catch (e) {
+                    console.log("讀取快取失敗，將重新從雲端抓取");
+                }
+            }
+
+            // 2. 如果快取沒有資料，才向雲端發送請求
+            if (!rawData || rawData.length === 0) {
+                document.getElementById('loading').classList.remove('hidden');
+                try {
+                    const response = await fetch(`${API_URL}?sheet=${sheetName}`);
+                    rawData = await response.json();
+                    
+                    if (rawData.error || rawData.length === 0) {
+                        document.getElementById('loading').innerText = "目前該分類沒有題目，請確認 Google 試算表分頁名稱與內容。";
+                        return;
+                    }
+
+                    // 存入 localStorage 快取
+                    localStorage.setItem(cacheKey, JSON.stringify(rawData));
+                } catch (error) {
+                    document.getElementById('loading').innerText = "載入題庫失敗，請檢查網路連線或 Apps Script 部署權限。";
                     return;
                 }
-
-                rawCategoryData = rawData;
-                buildUnits(rawData);
                 document.getElementById('loading').classList.add('hidden');
-            } catch (error) {
-                document.getElementById('loading').innerText = "載入題庫失敗，請檢查網路連線或 Apps Script 部署權限。";
+            } else {
+                // 有快取時直接隱藏讀取動畫，達到秒開效果
+                document.getElementById('loading').classList.add('hidden');
             }
+
+            rawCategoryData = rawData;
+            buildUnits(rawData);
+        }
+
+        // 強制重新整理快取（當老師更新雲端題目時使用）
+        function refreshCategoryCache() {
+            localStorage.removeItem(`wenhua_cache_${currentCategoryName}`);
+            changeCategory(currentCategoryName, true);
         }
 
         // 將題庫每 25 題切分為一個單元
@@ -219,7 +253,6 @@
         function startUnitQuiz(unitIdx) {
             currentUnitIdx = unitIdx;
             isMistakeMode = false;
-            // 每次進入單元時隨機打亂該單元的題目順序
             quizData = shuffleArray(unitsList[unitIdx]);
             currentIdx = 0;
             score = 0;
@@ -277,7 +310,6 @@
                 feedback.innerHTML = `<strong>✨ 答對了！</strong> ${q.explanation || ''}`;
                 score++;
 
-                // 如果在錯題模式答對，自動從錯題本移除
                 if (isMistakeMode) {
                     removeMistakeFromStorage(q);
                 }
@@ -285,7 +317,6 @@
                 feedback.className = "mt-8 p-6 rounded-2xl text-2xl font-bold bg-rose-50 text-rose-700 border-2 border-rose-200";
                 feedback.innerHTML = `<strong>❌ 答錯了。</strong> 正確答案是 ${String.fromCharCode(65 + q.answer)}。${q.explanation || ''}`;
 
-                // 答錯自動加入長期錯題本
                 saveMistakeToStorage(q);
             }
 
@@ -298,7 +329,6 @@
             if (currentIdx < quizData.length) {
                 loadQuestion();
             } else {
-                // 測驗結束，儲存學習歷程
                 if (!isMistakeMode) {
                     saveHistoryToStorage(`${currentCategoryName} - 第 ${currentUnitIdx + 1} 單元`, score, quizData.length);
                 } else {
@@ -321,9 +351,8 @@
             }
         }
 
-        // ================= LocalStorage 長期記錄管理 =================
+        // ================= LocalStorage 長期記錄與快取管理 =================
 
-        // 取得錯題本
         function getStoredMistakes() {
             try {
                 const data = localStorage.getItem('wenhua_quiz_mistakes');
@@ -333,10 +362,8 @@
             }
         }
 
-        // 儲存錯題（避免重複加入相同題目）
         function saveMistakeToStorage(q) {
             let mistakes = getStoredMistakes();
-            // 以題目文字作為唯一識別
             const exists = mistakes.some(item => item.question === q.question);
             if (!exists) {
                 mistakes.push(q);
@@ -345,7 +372,6 @@
             }
         }
 
-        // 移除單一錯題
         function removeMistakeFromStorage(q) {
             let mistakes = getStoredMistakes();
             mistakes = mistakes.filter(item => item.question !== q.question);
@@ -353,7 +379,6 @@
             updateMistakeBadge();
         }
 
-        // 清空錯題本
         function clearMistakes() {
             if (confirm('確定要清空所有錯題記錄嗎？')) {
                 localStorage.removeItem('wenhua_quiz_mistakes');
@@ -362,13 +387,11 @@
             }
         }
 
-        // 更新導覽列錯題數量標籤
         function updateMistakeBadge() {
             const count = getStoredMistakes().length;
             document.getElementById('mistake-count').innerText = count;
         }
 
-        // 渲染錯題本頁面
         function renderMistakesPage() {
             const mistakes = getStoredMistakes();
             const container = document.getElementById('mistakes-list-container');
@@ -397,8 +420,7 @@
             });
         }
 
-        // 單獨刪除某題
-        functiondeleteOneMistake(questionText) {
+        function deleteOneMistake(questionText) {
             let mistakes = getStoredMistakes();
             mistakes = mistakes.filter(item => item.question !== questionText);
             localStorage.setItem('wenhua_quiz_mistakes', JSON.stringify(mistakes));
@@ -406,7 +428,6 @@
             renderMistakesPage();
         }
 
-        // 開始錯題特訓
         function startMistakePractice() {
             const mistakes = getStoredMistakes();
             if (mistakes.length === 0) return;
@@ -423,7 +444,6 @@
             loadQuestion();
         }
 
-        // 儲存學習歷程記錄
         function saveHistoryToStorage(title, score, total) {
             try {
                 let history = getStoredHistory();
@@ -437,13 +457,11 @@
                     time: timeString
                 });
 
-                // 最多保留最近 50 筆
                 if (history.length > 50) history.pop();
                 localStorage.setItem('wenhua_quiz_history', JSON.stringify(history));
             } catch (e) {}
         }
 
-        // 取得歷史記錄
         function getStoredHistory() {
             try {
                 const data = localStorage.getItem('wenhua_quiz_history');
@@ -453,7 +471,6 @@
             }
         }
 
-        // 清除歷史記錄
         function clearHistory() {
             if (confirm('確定要清除所有學習歷程記錄嗎？')) {
                 localStorage.removeItem('wenhua_quiz_history');
@@ -461,7 +478,6 @@
             }
         }
 
-        // 渲染學習歷程頁面
         function renderHistoryPage() {
             const history = getStoredHistory();
             const container = document.getElementById('history-list-container');
