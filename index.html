@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文華國小五年級 - 國語文競賽線上特訓 v3.0 (手寫自評版)</title>
+    <title>文華國小五年級 - 國語文競賽線上特訓 v3.0 (手寫自評修復版)</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -12,7 +12,7 @@
     <div class="max-w-3xl mx-auto p-8 w-full mt-8">
         <header class="text-center mb-8">
             <h1 class="text-3xl font-bold text-indigo-600">🏫 文華國小五年級國語文競賽特訓</h1>
-            <p class="text-lg text-slate-500 mt-2">雲端題庫即時同步練習網 v3.0 (手寫自評版)</p>
+            <p class="text-lg text-slate-500 mt-2">雲端題庫即時同步練習網 v3.0 (手寫自評修復版)</p>
             
             <!-- 主導覽按鈕 (模式切換與功能面板) -->
             <div class="flex flex-wrap justify-center gap-3 mt-6">
@@ -79,6 +79,18 @@
                 <div id="result-feedback" class="mt-8 hidden p-6 rounded-2xl text-2xl font-bold text-center"></div>
             </div>
 
+            <!-- 新增：測驗結算專屬卡片 (解決原本 DOM 結構被覆蓋的問題) -->
+            <div id="quiz-result-card" class="bg-white rounded-3xl shadow-xl p-10 border-2 border-slate-200 hidden">
+                <div class="text-center py-12">
+                    <h2 class="text-4xl font-bold text-slate-700 mb-4">🎉 測驗完成！</h2>
+                    <p class="text-2xl text-slate-600 mb-10">你的總得分：<span id="final-score" class="text-indigo-600 font-bold text-4xl">0</span> / <span id="total-questions">25</span></p>
+                    <div class="flex justify-center gap-4 flex-wrap">
+                        <button onclick="returnToUnitsFromResult()" class="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-xl shadow-lg hover:bg-indigo-700 transition">回到單元列表</button>
+                        <button onclick="switchMainTab('history')" class="bg-slate-200 text-slate-700 px-8 py-4 rounded-2xl font-bold text-xl shadow hover:bg-slate-300 transition">查看歷史記錄</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- 下一題與返回按鈕 -->
             <div class="flex justify-between items-center">
                 <button id="back-to-units-btn" onclick="returnToUnits()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-3 rounded-2xl font-bold text-lg hidden transition">
@@ -142,6 +154,9 @@
             document.getElementById('view-practice').classList.add('hidden');
             document.getElementById('view-mistakes').classList.add('hidden');
             document.getElementById('view-history').classList.add('hidden');
+            
+            // 確保每次切換分頁時，結算畫面是被隱藏的
+            document.getElementById('quiz-result-card').classList.add('hidden');
 
             document.getElementById('tab-practice').className = "px-5 py-2.5 rounded-2xl font-bold bg-white text-slate-600 border-2 border-slate-200 shadow-sm transition";
             document.getElementById('tab-mistakes').className = "px-5 py-2.5 rounded-2xl font-bold bg-white text-slate-600 border-2 border-slate-200 shadow-sm transition";
@@ -178,6 +193,7 @@
             
             document.getElementById('unit-selection-card').classList.add('hidden');
             document.getElementById('quiz-card').classList.add('hidden');
+            document.getElementById('quiz-result-card').classList.add('hidden'); // 隱藏結算畫面
             document.getElementById('next-btn').classList.add('hidden');
             document.getElementById('back-to-units-btn').classList.add('hidden');
 
@@ -277,6 +293,7 @@
             score = 0;
 
             document.getElementById('unit-selection-card').classList.add('hidden');
+            document.getElementById('quiz-result-card').classList.add('hidden'); // 確保結算卡片隱藏
             document.getElementById('quiz-card').classList.remove('hidden');
             document.getElementById('back-to-units-btn').classList.remove('hidden');
             loadQuestion();
@@ -286,6 +303,12 @@
             document.getElementById('quiz-card').classList.add('hidden');
             document.getElementById('next-btn').classList.add('hidden');
             document.getElementById('back-to-units-btn').classList.add('hidden');
+            document.getElementById('unit-selection-card').classList.remove('hidden');
+        }
+
+        // 新增：從結算畫面返回單元列表
+        function returnToUnitsFromResult() {
+            document.getElementById('quiz-result-card').classList.add('hidden');
             document.getElementById('unit-selection-card').classList.remove('hidden');
         }
 
@@ -392,12 +415,13 @@
             document.getElementById('next-btn').classList.remove('hidden');
         }
 
-        // ================= 通用下一步邏輯 =================
+        // ================= 通用下一步與結算邏輯 =================
         function nextQuestion() {
             currentIdx++;
             if (currentIdx < quizData.length) {
                 loadQuestion();
             } else {
+                // 測驗結束，儲存歷史紀錄
                 let modeTitle = (currentCategoryName === '注音') ? '注音' : (isHandwritingMode ? '手寫練字' : '國字字形');
                 
                 if (!isMistakeMode) {
@@ -406,18 +430,16 @@
                     saveHistoryToStorage(`錯題特訓複習`, score, quizData.length);
                 }
 
-                document.getElementById('quiz-card').innerHTML = `
-                    <div class="text-center py-12">
-                        <h2 class="text-4xl font-bold text-slate-700 mb-4">🎉 測驗完成！</h2>
-                        <p class="text-2xl text-slate-600 mb-10">你的總得分：<span class="text-indigo-600 font-bold text-4xl">${score}</span> / ${quizData.length}</p>
-                        <div class="flex justify-center gap-4 flex-wrap">
-                            <button onclick="switchMainTab('practice')" class="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-xl shadow-lg hover:bg-indigo-700 transition">回到單元列表</button>
-                            <button onclick="switchMainTab('history')" class="bg-slate-200 text-slate-700 px-8 py-4 rounded-2xl font-bold text-xl shadow hover:bg-slate-300 transition">查看歷史記錄</button>
-                        </div>
-                    </div>
-                `;
+                // 隱藏測驗卡片，顯示結算專屬卡片 (不再覆蓋 innerHTML)
+                document.getElementById('quiz-card').classList.add('hidden');
                 document.getElementById('next-btn').classList.add('hidden');
                 document.getElementById('back-to-units-btn').classList.add('hidden');
+                
+                // 更新結算分數並顯示
+                document.getElementById('final-score').innerText = score;
+                document.getElementById('total-questions').innerText = quizData.length;
+                document.getElementById('quiz-result-card').classList.remove('hidden');
+                
                 updateMistakeBadge();
             }
         }
@@ -516,6 +538,7 @@
 
             switchMainTab('practice');
             document.getElementById('unit-selection-card').classList.add('hidden');
+            document.getElementById('quiz-result-card').classList.add('hidden'); // 確保結算卡片隱藏
             document.getElementById('quiz-card').classList.remove('hidden');
             document.getElementById('back-to-units-btn').classList.add('hidden');
             loadQuestion();
