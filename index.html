@@ -79,7 +79,7 @@
                 <div id="result-feedback" class="mt-8 hidden p-6 rounded-2xl text-2xl font-bold text-center"></div>
             </div>
 
-            <!-- 新增：測驗結算專屬卡片 (解決原本 DOM 結構被覆蓋的問題) -->
+            <!-- 測驗結算專屬卡片 (解決原本 DOM 結構被覆蓋的問題) -->
             <div id="quiz-result-card" class="bg-white rounded-3xl shadow-xl p-10 border-2 border-slate-200 hidden">
                 <div class="text-center py-12">
                     <h2 class="text-4xl font-bold text-slate-700 mb-4">🎉 測驗完成！</h2>
@@ -130,6 +130,7 @@
     </div>
 
     <script>
+        // 綁定您專屬的 Google Apps Script 網址
         const API_URL = "https://script.google.com/macros/s/AKfycby730wJM6SxtCjnu_1abKeIosFmQPNlNDe5znncIpXkHYaBSgTJ9by9KTLvyPQh2Z5QiA/exec";
 
         let currentCategoryName = '注音';
@@ -229,7 +230,7 @@
                     rawData = await response.json();
                     
                     if (rawData.error || rawData.length === 0) {
-                        document.getElementById('loading').innerText = "目前該分類沒有題目，請確認 Google 試算表內容。";
+                        document.getElementById('loading').innerText = "目前該分類沒有題目，請確認 Google 試算表內容與分頁名稱。";
                         return;
                     }
                     localStorage.setItem(cacheKey, JSON.stringify(rawData));
@@ -306,7 +307,7 @@
             document.getElementById('unit-selection-card').classList.remove('hidden');
         }
 
-        // 新增：從結算畫面返回單元列表
+        // 從結算畫面返回單元列表
         function returnToUnitsFromResult() {
             document.getElementById('quiz-result-card').classList.add('hidden');
             document.getElementById('unit-selection-card').classList.remove('hidden');
@@ -430,7 +431,7 @@
                     saveHistoryToStorage(`錯題特訓複習`, score, quizData.length);
                 }
 
-                // 隱藏測驗卡片，顯示結算專屬卡片 (不再覆蓋 innerHTML)
+                // 隱藏測驗卡片，顯示結算專屬卡片
                 document.getElementById('quiz-card').classList.add('hidden');
                 document.getElementById('next-btn').classList.add('hidden');
                 document.getElementById('back-to-units-btn').classList.add('hidden');
