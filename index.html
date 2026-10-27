@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文華國小 - 國語文競賽線上特訓 v5.0 效能秒開版</title>
+    <title>文華國小 - 國語文競賽線上特訓 v5.0 全國賽完全版</title>
     <!-- 引入 Tailwind CSS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
@@ -14,9 +14,9 @@
         <div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-black tracking-wider flex items-center gap-2">
-                    🏆 國語文競賽線上特訓 <span class="text-xs bg-amber-400 text-slate-900 px-2 py-0.5 rounded-full font-bold">v5.0 秒開版</span>
+                    🏆 國語文競賽線上特訓 <span class="text-xs bg-amber-400 text-slate-900 px-2 py-0.5 rounded-full font-bold">v5.0 全國賽完全版</span>
                 </h1>
-                <p class="text-indigo-200 text-xs mt-1">字音字形特訓系統（含 100-105 年全國賽題庫）</p>
+                <p class="text-indigo-200 text-xs mt-1">字音字形特訓系統（含 100-105 年全國賽 1200 題）</p>
             </div>
             <!-- 主頁籤切換按鈕 -->
             <div class="flex gap-2 items-center">
@@ -53,7 +53,7 @@
                 </div>
                 <div class="text-center space-y-2">
                     <h2 class="text-2xl font-black text-slate-700">🎯 請選擇練習題庫來源</h2>
-                    <p class="text-slate-400 text-sm">您可以選擇基礎校內練習，或挑戰高難度的歷屆全國賽題庫！</p>
+                    <p class="text-slate-400 text-sm">您可以選擇基礎校內練習，或挑戰高難度的歷屆全國賽題庫！[cite: 1]</p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -74,7 +74,7 @@
                         <div>
                             <div class="text-3xl mb-2">🏆</div>
                             <div class="text-xl font-black text-amber-900 group-hover:text-amber-600">100-105年全國賽題庫</div>
-                            <div class="text-sm text-slate-500 mt-1">歷屆全國語文競賽精選 1200 題，依年份循序漸進挑戰！</div>
+                            <div class="text-sm text-slate-500 mt-1">歷屆全國語文競賽精選 1200 題，依年份循序漸進挑戰！[cite: 1]</div>
                         </div>
                         <div class="mt-6 flex items-center gap-2 text-amber-600 font-bold text-sm">
                             進入全國賽挑戰 ➔
@@ -92,7 +92,7 @@
                             <span class="text-slate-300">|</span>
                             <h2 id="library-title-heading" class="text-2xl font-black text-slate-700">單元選擇</h2>
                         </div>
-                        <p class="text-slate-400 text-sm mt-0.5">請選擇您想練習的模式與單元，挑戰 80% 通關與滿分紀錄！</p>
+                        <p class="text-slate-400 text-sm mt-0.5">請選擇您想練習的模式與單元，挑戰 80% 通關與滿分紀錄！[cite: 1, 3]</p>
                     </div>
                     <!-- 綜合隨機測驗按鈕 -->
                     <button onclick="openCustomQuizModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-md transition text-sm flex items-center gap-1.5 w-full sm:w-auto justify-center">
@@ -109,7 +109,7 @@
                         ✍️ 國字字形選擇題
                     </button>
                     <button onclick="setMode('手寫')" id="mode-btn-handwriting" class="p-3 rounded-xl font-bold border-2 transition text-sm flex items-center justify-center gap-2 bg-white text-slate-600 border-slate-200 hover:bg-slate-50">
-                        📝 看注音寫國字 (手寫自評)
+                        📝 看注音寫國字 (手寫自評)[cite: 2, 3]
                     </button>
                 </div>
 
@@ -240,7 +240,7 @@
 
     </main>
 
-    <!-- 🎲 自訂隨機測驗 Modal 彈跳視窗 -->
+    <!-- 🎲 自訂範圍隨機測驗 Modal 彈跳視窗 -->
     <div id="custom-quiz-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 border-2 border-slate-200 space-y-6 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b pb-4">
@@ -264,6 +264,10 @@
                             <span class="text-slate-300">|</span>
                             <button onclick="toggleAllModalUnits(false)" class="text-xs text-slate-600 font-bold hover:underline">取消全選</button>
                         </div>
+                    </div>
+                    <!-- 快捷全選按鈕區 (特別針對全國賽提供年份快捷) -->
+                    <div id="modal-quick-buttons" class="flex flex-wrap gap-1.5 pb-1 hidden">
+                        <!-- 動態插入年份快捷按鈕 -->
                     </div>
                     <div id="modal-units-checkboxes" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto p-3 bg-slate-50 rounded-xl border border-slate-200">
                         <!-- 動態生成勾選方塊 -->
@@ -290,7 +294,7 @@
 
     <!-- 頁尾 -->
     <footer class="bg-white border-t border-slate-200 py-6 text-center text-slate-400 text-sm">
-        <p>文華國小五年級 🏆 國語文競賽線上特訓系統 v5.0 秒開版 ｜ 雲端題庫即時同步</p>
+        <p>文華國小五年級 🏆 國語文競賽線上特訓系統 v5.0 全國賽完全版 ｜ 雲端題庫即時同步</p>
     </footer>
 
     <!-- 前端核心 JavaScript 邏輯 -->
@@ -313,7 +317,7 @@
         let isMistakeMode = false; 
         let isCustomQuizMode = false; 
 
-        // 🚀 記憶體快取物件：抓過一次就不會重複向雲端請求，實現秒開
+        // 記憶體快取物件
         let dataCache = {};
 
         window.onload = function() {
@@ -323,7 +327,6 @@
         // 強制清除快取並重新載入
         function forceRefreshCache() {
             dataCache = {};
-            localStorage.removeItem('wenhua_cache_timestamp');
             alert('已成功清除本地題庫快取！下次點擊將重新向 Google 雲端抓取最新題目。');
         }
 
@@ -401,11 +404,10 @@
             await loadAndRenderUnits();
         }
 
-        // 載入題庫（結合記憶體快取，秒開不延遲）
+        // 載入題庫
         async function loadAndRenderUnits() {
             const container = document.getElementById('units-container');
             
-            // 如果快取裡已經有了，直接秒讀！
             if (dataCache[currentCategoryName]) {
                 rawCategoryData = dataCache[currentCategoryName];
                 renderUnitsList();
@@ -418,7 +420,7 @@
                 const response = await fetch(`${API_URL}?sheet=${encodeURIComponent(currentCategoryName)}`);
                 const json = await response.json();
                 if (json && json.data) {
-                    dataCache[currentCategoryName] = json.data; // 寫入快取
+                    dataCache[currentCategoryName] = json.data;
                     rawCategoryData = json.data;
                 } else {
                     throw new Error('資料格式錯誤');
@@ -431,6 +433,7 @@
             renderUnitsList();
         }
 
+        // 渲染單元列表（支援年份摺疊分組與打勾機制）
         function renderUnitsList() {
             const container = document.getElementById('units-container');
             container.innerHTML = '';
@@ -489,6 +492,7 @@
             }
         }
 
+        // 建立單元按鈕 (包含 localStorage 通關打勾與最高分徽章)
         function createUnitCardElement(unitData, unitIdx, titleText) {
             const btn = document.createElement('button');
             const storageKey = `wenhua_score_${currentCategoryName}_${currentPracticeMode}_unit_${unitIdx}`;
@@ -851,22 +855,64 @@
             });
         }
 
+        // ================= 自訂範圍隨機測驗 Modal 控制 =================
         function openCustomQuizModal() {
             document.getElementById('custom-quiz-modal').classList.remove('hidden');
             const badge = document.getElementById('modal-library-badge');
             badge.innerText = `目前範圍：${currentLibraryType === 'base' ? '校內基礎題庫' : '100-105年全國賽題庫'} (${currentCategoryName})`;
 
+            const quickButtonsContainer = document.getElementById('modal-quick-buttons');
             const checkboxesContainer = document.getElementById('modal-units-checkboxes');
             checkboxesContainer.innerHTML = '';
+            quickButtonsContainer.innerHTML = '';
+
+            // 如果是全國賽，動態加入快捷選取按鈕
+            if (currentLibraryType === 'national') {
+                quickButtonsContainer.classList.remove('hidden');
+                
+                // 全選大亂鬥按鈕
+                const allBtn = document.createElement('button');
+                allBtn.type = "button";
+                allBtn.className = "text-xs bg-indigo-600 text-white font-bold px-2.5 py-1 rounded-lg hover:bg-indigo-700";
+                allBtn.innerText = "🔥 全國賽全範圍大亂鬥";
+                allBtn.onclick = () => toggleAllModalUnits(true);
+                quickButtonsContainer.appendChild(allBtn);
+
+                // 依年份建立快捷按鈕 (假設每4個單元為一年)
+                let years = ['100年', '101年', '102年', '103年', '104年', '105年'];
+                years.forEach((yr, yIdx) => {
+                    let yBtn = document.createElement('button');
+                    yBtn.type = "button";
+                    yBtn.className = "text-xs bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded-lg hover:bg-amber-200";
+                    yBtn.innerText = yr;
+                    yBtn.onclick = () => selectUnitsByYear(yIdx);
+                    quickButtonsContainer.appendChild(yBtn);
+                });
+            } else {
+                quickButtonsContainer.classList.add('hidden');
+            }
 
             unitsList.forEach((_, idx) => {
                 const label = document.createElement('label');
                 label.className = "flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 text-sm font-bold text-slate-700 cursor-pointer hover:bg-indigo-50";
                 label.innerHTML = `
-                    <input type="checkbox" name="custom-unit-cb" value="${idx}" checked class="w-4 h-4 text-indigo-600 rounded">
+                    <input type="checkbox" name="custom-unit-cb" value="${idx}" data-unit-idx="${idx}" checked class="w-4 h-4 text-indigo-600 rounded">
                     <span>單元 ${idx + 1}</span>
                 `;
                 checkboxesContainer.appendChild(label);
+            });
+        }
+
+        function selectUnitsByYear(yearIdx) {
+            const checkboxes = document.getElementsByName('custom-unit-cb');
+            checkboxes.forEach((cb, idx) => {
+                let start = yearIdx * 4;
+                let end = start + 3;
+                if (idx >= start && idx <= end) {
+                    cb.checked = true;
+                } else {
+                    cb.checked = false;
+                }
             });
         }
 
