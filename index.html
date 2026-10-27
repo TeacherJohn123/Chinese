@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文華國小五年級 - 國語文競賽線上特訓 v4.3 (修正版)</title>
+    <title>文華國小五年級 - 國語文競賽線上特訓 v4.4 (歷屆手寫支援版)</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -12,7 +12,7 @@
     <div class="max-w-4xl mx-auto p-8 w-full mt-8">
         <header class="text-center mb-8">
             <h1 class="text-3xl font-bold text-indigo-600">🏫 文華國小五年級國語文競賽特訓</h1>
-            <p class="text-lg text-slate-500 mt-2">雲端題庫即時同步練習網 v4.3 (修正版)</p>
+            <p class="text-lg text-slate-500 mt-2">雲端題庫即時同步練習網 v4.4 (歷屆手寫支援版)</p>
             
             <!-- 主導覽按鈕 -->
             <div class="flex flex-wrap justify-center gap-3 mt-6">
@@ -35,32 +35,41 @@
                 </div>
             </div>
 
-            <!-- 2. 全國賽歷屆試題區 (支援 100~105 年字音字形) -->
+            <!-- 2. 全國賽歷屆試題區 (支援 100~105 年字音字形，可選選擇或手寫) -->
             <div class="bg-white rounded-3xl shadow-md p-6 border-2 border-slate-200">
-                <h3 class="text-sm font-bold text-amber-600 uppercase tracking-wider mb-3">🏆 歷屆全國語文競賽試題 (100 ~ 105 年)</h3>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-2">
+                    <h3 class="text-sm font-bold text-amber-600 uppercase tracking-wider">🏆 歷屆全國語文競賽試題 (100 ~ 105 年)</h3>
+                    <!-- 全國賽模式切換 (選擇題 vs 手寫自評) -->
+                    <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                        <button onclick="setNationalMode('choice')" id="nat-mode-choice" class="px-3 py-1 text-xs font-bold rounded-lg bg-white text-amber-600 shadow-sm transition">📝 選擇題模式</button>
+                        <button onclick="setNationalMode('handwriting')" id="nat-mode-handwriting" class="px-3 py-1 text-xs font-bold rounded-lg text-slate-500 transition">✍️ 手寫自評模式</button>
+                    </div>
+                </div>
+
                 <div class="space-y-4">
                     <!-- 字音列 -->
                     <div>
                         <div class="text-xs font-bold text-slate-400 mb-2">【 全國字音部分 】</div>
-                        <div class="flex justify-start gap-2 flex-wrap">
-                            <button onclick="changeMode('100全國字音')" id="btn-100全國字音" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">100年</button>
-                            <button onclick="changeMode('101全國字音')" id="btn-101全國字音" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">101年</button>
-                            <button onclick="changeMode('102全國字音')" id="btn-102全國字音" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">102年</button>
-                            <button onclick="changeMode('103全國字音')" id="btn-103全國字音" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">103年</button>
-                            <button onclick="changeMode('104全國字音')" id="btn-104全國字音" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">104年</button>
-                            <button onclick="changeMode('105全國字音')" id="btn-105全國字音" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">105年</button>
+                        <div class="flex justify-start gap-2 flex-wrap" id="national-phonetic-buttons">
+                            <!-- 動態生成按鈕以支援模式 -->
+                            <button onclick="selectNationalYear('100全國字音')" id="btn-100全國字音" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">100年</button>
+                            <button onclick="selectNationalYear('101全國字音')" id="btn-101全國字音" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">101年</button>
+                            <button onclick="selectNationalYear('102全國字音')" id="btn-102全國字音" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">102年</button>
+                            <button onclick="selectNationalYear('103全國字音')" id="btn-103全國字音" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">103年</button>
+                            <button onclick="selectNationalYear('104全國字音')" id="btn-104全國字音" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">104年</button>
+                            <button onclick="selectNationalYear('105全國字音')" id="btn-105全國字音" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">105年</button>
                         </div>
                     </div>
                     <!-- 字形列 -->
                     <div>
                         <div class="text-xs font-bold text-slate-400 mb-2">【 全國字形部分 】</div>
-                        <div class="flex justify-start gap-2 flex-wrap">
-                            <button onclick="changeMode('100全國字形')" id="btn-100全國字形" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">100年</button>
-                            <button onclick="changeMode('101全國字形')" id="btn-101全國字形" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">101年</button>
-                            <button onclick="changeMode('102全國字形')" id="btn-102全國字形" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">102年</button>
-                            <button onclick="changeMode('103全國字形')" id="btn-103全國字形" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">103年</button>
-                            <button onclick="changeMode('104全國字形')" id="btn-104全國字形" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">104年</button>
-                            <button onclick="changeMode('105全國字形')" id="btn-105全國字形" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">105年</button>
+                        <div class="flex justify-start gap-2 flex-wrap" id="national-character-buttons">
+                            <button onclick="selectNationalYear('100全國字形')" id="btn-100全國字形" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">100年</button>
+                            <button onclick="selectNationalYear('101全國字形')" id="btn-101全國字形" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">101年</button>
+                            <button onclick="selectNationalYear('102全國字形')" id="btn-102全國字形" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">102年</button>
+                            <button onclick="selectNationalYear('103全國字形')" id="btn-103全國字形" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">103年</button>
+                            <button onclick="selectNationalYear('104全國字形')" id="btn-104全國字形" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">104年</button>
+                            <button onclick="selectNationalYear('105全國字形')" id="btn-105全國字形" class="px-4 py-2 rounded-xl text-sm font-bold bg-white text-slate-600 border-2 border-slate-200 transition">105年</button>
                         </div>
                     </div>
                 </div>
@@ -103,8 +112,8 @@
                     </button>
 
                     <div id="handwriting-answer-area" class="hidden flex flex-col items-center gap-6 w-full">
-                        <div class="text-xl text-slate-500 font-bold">正確的國字是：</div>
-                        <div id="handwriting-correct-answer" class="text-7xl font-bold text-emerald-600 bg-emerald-50 px-16 py-8 rounded-3xl border-4 border-emerald-200 shadow-inner"></div>
+                        <div class="text-xl text-slate-500 font-bold">正確的答案是：</div>
+                        <div id="handwriting-correct-answer" class="text-5xl md:text-7xl font-bold text-emerald-600 bg-emerald-50 px-12 py-8 rounded-3xl border-4 border-emerald-200 shadow-inner text-center break-all"></div>
 
                         <div class="text-lg text-slate-600 mt-4 font-bold">請誠實自評：</div>
                         <div id="handwriting-eval-buttons" class="flex gap-4 w-full justify-center">
@@ -209,7 +218,8 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby730wJM6SxtCjnu_1abKeIosFmQPNlNDe5znncIpXkHYaBSgTJ9by9KTLvyPQh2Z5QiA/exec";
 
-        let currentMode = 'phonetic'; 
+        let currentMode = 'phonetic'; // 當前基礎模式
+        let nationalInteractionMode = 'choice'; // 全國賽互動模式: 'choice' 或 'handwriting'
         let rawCategoryData = []; 
         let unitsList = [];        
         let currentUnitIdx = 0;   
@@ -259,11 +269,35 @@
             return arr;
         }
 
-        // 統一將模式對應到 Google 試算表的分頁名稱
+        // 設定全國賽互動模式 (選擇題 vs 手寫自評)
+        function setNationalMode(mode) {
+            nationalInteractionMode = mode;
+            const btnChoice = document.getElementById('nat-mode-choice');
+            const btnHandwriting = document.getElementById('nat-mode-handwriting');
+
+            if (mode === 'choice') {
+                btnChoice.className = "px-3 py-1 text-xs font-bold rounded-lg bg-white text-amber-600 shadow-sm transition";
+                btnHandwriting.className = "px-3 py-1 text-xs font-bold rounded-lg text-slate-500 transition";
+            } else {
+                btnChoice.className = "px-3 py-1 text-xs font-bold rounded-lg text-slate-500 transition";
+                btnHandwriting.className = "px-3 py-1 text-xs font-bold rounded-lg bg-white text-amber-600 shadow-sm transition";
+            }
+        }
+
+        function selectNationalYear(yearStr) {
+            // 如果是手寫模式，我們將模式名稱後綴加上 _hw 以作區分與辨識
+            const actualMode = (nationalInteractionMode === 'handwriting') ? (yearStr + '_hw') : yearStr;
+            changeMode(actualMode);
+        }
+
         function getSheetName(mode) {
             if (mode === 'phonetic') return '注音';
             if (mode === 'character' || mode === 'handwriting') return '國字';
-            return mode; // 像是 '100全國字音', '105全國字形' 等
+            // 如果是全國賽手寫模式 (如 100全國字音_hw)，實際抓取雲端試算表時需去掉 _hw 字尾
+            if (mode.endsWith('_hw')) {
+                return mode.replace('_hw', '');
+            }
+            return mode;
         }
 
         async function changeMode(mode, forceRefresh = false) {
@@ -282,7 +316,9 @@
             // 樣式重置所有按鈕
             const allModes = ['phonetic', 'character', 'handwriting', 
                 '100全國字音', '101全國字音', '102全國字音', '103全國字音', '104全國字音', '105全國字音',
-                '100全國字形', '101全國字形', '102全國字形', '103全國字形', '104全國字形', '105全國字形'];
+                '100全國字形', '101全國字形', '102全國字形', '103全國字形', '104全國字形', '105全國字形',
+                '100全國字音_hw', '101全國字音_hw', '102全國字音_hw', '103全國字音_hw', '104全國字音_hw', '105全國字音_hw',
+                '100全國字形_hw', '101全國字形_hw', '102全國字形_hw', '103全國字形_hw', '104全國字形_hw', '105全國字形_hw'];
             
             allModes.forEach(m => {
                 const btn = document.getElementById(`btn-${m}`);
@@ -364,6 +400,7 @@
             let modeTitle = '校內注音';
             if (currentMode === 'character') modeTitle = '校內國字';
             else if (currentMode === 'handwriting') modeTitle = '手寫練字';
+            else if (currentMode.endsWith('_hw')) modeTitle = currentMode.replace('_hw', ' (手寫自評)');
             else modeTitle = currentMode;
 
             document.getElementById('current-category-title').textContent = `【${modeTitle}特訓】選擇練習單元`;
@@ -525,11 +562,11 @@
             const q = quizData[currentIdx];
             
             const activeMode = isMistakeMode ? (q.mode || currentMode) : currentMode;
-            const isHandwriting = (activeMode === 'handwriting');
+            const isHandwriting = (activeMode === 'handwriting' || activeMode.endsWith('_hw'));
 
             document.getElementById('question-progress').textContent = `題目 ${currentIdx + 1} / ${quizData.length}`;
             let catText = isMistakeMode ? "錯題特訓" : (q.category || "字形辨正");
-            if (isHandwriting) catText += " (手寫)";
+            if (isHandwriting) catText += " (手寫自評)";
             document.getElementById('question-category').textContent = catText;
             
             document.getElementById('question-title').textContent = q.question;
@@ -550,38 +587,33 @@
                 const container = document.getElementById('options-container');
                 container.innerHTML = '';
                 
-                if (!q.options || q.options.length === 0) {
-                    container.innerHTML = `<div class="col-span-2 text-center text-rose-500 font-bold text-xl">⚠️ 題目選項資料錯誤，請略過此題。</div>`;
-                    return;
+                if (q.options) {
+                    q.options.forEach((opt, idx) => {
+                        if (!opt) return;
+                        const btn = document.createElement('button');
+                        btn.className = "w-full p-6 rounded-2xl border-2 border-slate-200 hover:bg-indigo-50 hover:border-indigo-300 transition text-slate-700 font-bold text-2xl flex items-center justify-center shadow-md gap-4";
+                        btn.innerHTML = `<span class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 text-base flex items-center justify-center font-bold shrink-0">${String.fromCharCode(65 + idx)}</span> <span class="text-3xl">${opt}</span>`;
+                        btn.onclick = () => selectOption(idx);
+                        container.appendChild(btn);
+                    });
                 }
-
-                q.options.forEach((opt, idx) => {
-                    if (opt === undefined || opt === null || String(opt).trim() === '') return; 
-                    const btn = document.createElement('button');
-                    btn.className = "w-full p-6 rounded-2xl border-2 border-slate-200 hover:bg-indigo-50 hover:border-indigo-300 transition text-slate-700 font-bold text-2xl flex items-center justify-center shadow-md gap-4";
-                    
-                    const labelSpan = document.createElement('span');
-                    labelSpan.className = "w-10 h-10 rounded-xl bg-slate-100 text-slate-600 text-base flex items-center justify-center font-bold shrink-0";
-                    labelSpan.textContent = String.fromCharCode(65 + idx);
-
-                    const textSpan = document.createElement('span');
-                    textSpan.className = "text-3xl";
-                    textSpan.textContent = String(opt);
-
-                    btn.appendChild(labelSpan);
-                    btn.appendChild(textSpan);
-                    btn.onclick = () => selectOption(idx);
-                    container.appendChild(btn);
-                });
             }
         }
 
+        // ================= 手寫模式專屬功能 ================= 
         function showAnswer() {
             document.getElementById('btn-show-answer').classList.add('hidden');
             document.getElementById('handwriting-answer-area').classList.remove('hidden');
             
             const q = quizData[currentIdx];
-            document.getElementById('handwriting-correct-answer').textContent = q.options[q.answer] || '';
+            // 抓取正確選項作為解答 (若 options 存在且有對應 answer 索引)
+            let correctText = "";
+            if (q.options && typeof q.answer === 'number' && q.options[q.answer]) {
+                correctText = q.options[q.answer];
+            } else {
+                correctText = q.answerText || "請對照原卷解答";
+            }
+            document.getElementById('handwriting-correct-answer').innerText = correctText;
         }
 
         function selfEvaluate(isCorrect) {
@@ -595,35 +627,55 @@
             feedback.classList.remove('hidden');
 
             if (isCorrect) {
-                feedback.className = "mt-4 p-6 rounded-2xl text-2xl font-bold bg-emerald-50 text-emerald-700 border-2 border-emerald-200";
-                feedback.textContent = `✨ 太棒了，你寫對了！ ${q.explanation || ''}`;
+                feedback.className = "mt-4 p-6 rounded-2xl text-2xl font-bold bg-emerald-50 text-emerald-700 border-2 border-emerald-200 text-center";
+                feedback.innerHTML = `<strong>✨ 太棒了，你寫對了！</strong> ${q.explanation || ''}`;
                 score++;
                 if (isMistakeMode) removeMistakeFromStorage(q);
             } else {
-                feedback.className = "mt-4 p-6 rounded-2xl text-2xl font-bold bg-rose-50 text-rose-700 border-2 border-rose-200";
-                feedback.textContent = `❌ 沒關係，記下來下次就不會錯了。 ${q.explanation || ''}`;
+                feedback.className = "mt-4 p-6 rounded-2xl text-2xl font-bold bg-rose-50 text-rose-700 border-2 border-rose-200 text-center";
+                feedback.innerHTML = `<strong>❌ 沒關係，記下來下次就不會錯了。</strong> ${q.explanation || ''}`;
+                
+                // 標記模式並存入錯題本
+                q.mode = currentMode;
                 saveMistakeToStorage(q);
             }
 
             document.getElementById('next-btn').classList.remove('hidden');
         }
 
-        function selectOption(selectedIdx) {
+        function selectOption(idx) {
             if (answered) return;
             answered = true;
-
+            
             const q = quizData[currentIdx];
+            const isCorrect = (idx === q.answer);
+            const container = document.getElementById('options-container');
+            const buttons = container.children;
+
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+                if (i === q.answer) {
+                    buttons[i].className = "w-full p-6 rounded-2xl border-4 border-emerald-500 bg-emerald-50 text-emerald-700 font-bold text-2xl flex items-center justify-center shadow-md gap-4";
+                } else if (i === idx && !isCorrect) {
+                    buttons[i].className = "w-full p-6 rounded-2xl border-4 border-rose-500 bg-rose-50 text-rose-700 font-bold text-2xl flex items-center justify-center shadow-md gap-4";
+                } else {
+                    buttons[i].className += " opacity-50";
+                }
+            }
+
             const feedback = document.getElementById('result-feedback');
             feedback.classList.remove('hidden');
 
-            if (selectedIdx === q.answer) {
-                feedback.className = "mt-8 p-6 rounded-2xl text-2xl font-bold bg-emerald-50 text-emerald-700 border-2 border-emerald-200";
-                feedback.textContent = `✨ 答對了！ ${q.explanation || ''}`;
+            if (isCorrect) {
+                feedback.className = "mt-8 p-6 rounded-2xl text-2xl font-bold bg-emerald-50 text-emerald-700 border-2 border-emerald-200 text-center";
+                feedback.innerHTML = `<strong>🎉 答對了！</strong> ${q.explanation || ''}`;
                 score++;
                 if (isMistakeMode) removeMistakeFromStorage(q);
             } else {
-                feedback.className = "mt-8 p-6 rounded-2xl text-2xl font-bold bg-rose-50 text-rose-700 border-2 border-rose-200";
-                feedback.textContent = `❌ 答錯了。正確答案是 ${String.fromCharCode(65 + q.answer)}。${q.explanation || ''}`;
+                feedback.className = "mt-8 p-6 rounded-2xl text-2xl font-bold bg-rose-50 text-rose-700 border-2 border-rose-200 text-center";
+                feedback.innerHTML = `<strong>❌ 答錯了！正確答案是：${q.options[q.answer]}</strong><br>${q.explanation || ''}`;
+                
+                q.mode = currentMode;
                 saveMistakeToStorage(q);
             }
 
@@ -635,216 +687,175 @@
             if (currentIdx < quizData.length) {
                 loadQuestion();
             } else {
-                let modeTitle = '校內注音';
-                if (currentMode === 'character') modeTitle = '校內國字';
-                else if (currentMode === 'handwriting') modeTitle = '手寫練字';
-                else modeTitle = currentMode;
-                
-                if (isMistakeMode) {
-                    saveHistoryToStorage(`錯題大特訓`, score, quizData.length);
-                } else if (isRandomMode) {
-                    saveHistoryToStorage(`${modeTitle} - 隨機綜合測驗 (${quizData.length}題)`, score, quizData.length);
-                } else {
-                    saveHistoryToStorage(`${modeTitle} - 第 ${currentUnitIdx + 1} 單元`, score, quizData.length);
-                }
-
-                document.getElementById('quiz-card').classList.add('hidden');
-                document.getElementById('next-btn').classList.add('hidden');
-                document.getElementById('back-to-units-btn').classList.add('hidden');
-                
-                document.getElementById('final-score').textContent = score;
-                document.getElementById('total-questions').textContent = quizData.length;
-                document.getElementById('quiz-result-card').classList.remove('hidden');
-                
-                updateMistakeBadge();
+                finishQuiz();
             }
         }
 
-        function getStoredMistakes() {
+        function finishQuiz() {
+            document.getElementById('quiz-card').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            document.getElementById('back-to-units-btn').classList.add('hidden');
+            
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('total-questions').textContent = quizData.length;
+            document.getElementById('quiz-result-card').classList.remove('hidden');
+
+            saveHistoryRecord({
+                mode: currentMode,
+                unit: isRandomMode ? '自訂隨機測驗' : (isMistakeMode ? '錯題特訓' : `第 ${currentUnitIdx + 1} 單元`),
+                score: score,
+                total: quizData.length,
+                date: new Date().toLocaleString()
+            });
+
+            updateMistakeBadge();
+        }
+
+        // ================= 錯題本與歷史紀錄管理 =================
+        function getMistakes() {
             try {
-                const data = localStorage.getItem('wenhua_quiz_mistakes');
-                return data ? JSON.parse(data) : [];
+                return JSON.parse(localStorage.getItem('wenhua_mistakes') || '[]');
             } catch (e) {
                 return [];
             }
         }
 
         function saveMistakeToStorage(q) {
-            let mistakes = getStoredMistakes();
-            let qToSave = { ...q, mode: isMistakeMode ? (q.mode || currentMode) : currentMode };
-            
-            const exists = mistakes.some(item => item.question === qToSave.question && item.mode === qToSave.mode);
+            let mistakes = getMistakes();
+            const exists = mistakes.some(item => item.question === q.question);
             if (!exists) {
-                mistakes.push(qToSave);
-                localStorage.setItem('wenhua_quiz_mistakes', JSON.stringify(mistakes));
+                mistakes.push(q);
+                localStorage.setItem('wenhua_mistakes', JSON.stringify(mistakes));
                 updateMistakeBadge();
             }
         }
 
         function removeMistakeFromStorage(q) {
-            let mistakes = getStoredMistakes();
-            const targetMode = q.mode || currentMode;
-            mistakes = mistakes.filter(item => !(item.question === q.question && (item.mode || currentMode) === targetMode));
-            localStorage.setItem('wenhua_quiz_mistakes', JSON.stringify(mistakes));
+            let mistakes = getMistakes();
+            mistakes = mistakes.filter(item => item.question !== q.question);
+            localStorage.setItem('wenhua_mistakes', JSON.stringify(mistakes));
             updateMistakeBadge();
         }
 
+        function updateMistakeBadge() {
+            const mistakes = getMistakes();
+            document.getElementById('mistake-count').textContent = mistakes.length;
+            const startBtn = document.getElementById('start-mistake-btn');
+            if (mistakes.length > 0) {
+                startBtn.classList.remove('hidden');
+            } else {
+                startBtn.classList.add('hidden');
+            }
+        }
+
+        function renderMistakesPage() {
+            const mistakes = getMistakes();
+            const container = document.getElementById('mistakes-list-container');
+            container.innerHTML = '';
+
+            if (mistakes.length === 0) {
+                container.innerHTML = `<div class="text-center py-12 text-slate-400 font-bold text-lg">太棒了！您的錯題本目前空空如也 🎉</div>`;
+                return;
+            }
+
+            mistakes.forEach((q, idx) => {
+                let correctText = (q.options && typeof q.answer === 'number') ? q.options[q.answer] : (q.answerText || '');
+                container.innerHTML += `
+                    <div class="p-6 rounded-2xl border-2 border-slate-200 bg-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <div class="text-xs font-bold text-indigo-600 mb-1">來源模式：${q.mode || '練習題'}</div>
+                            <div class="text-xl font-bold text-slate-700">${idx + 1}. ${q.question}</div>
+                            <div class="text-sm text-emerald-600 font-bold mt-2">正確答案：${correctText}</div>
+                        </div>
+                        <button onclick="removeMistakeByIndex(${idx})" class="bg-slate-200 hover:bg-rose-500 hover:text-white text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition">移除</button>
+                    </div>
+                `;
+            });
+        }
+
+        function removeMistakeByIndex(idx) {
+            let mistakes = getMistakes();
+            mistakes.splice(idx, 1);
+            localStorage.setItem('wenhua_mistakes', JSON.stringify(mistakes));
+            updateMistakeBadge();
+            renderMistakesPage();
+        }
+
         function clearMistakes() {
-            if (confirm('確定要清空所有錯題記錄嗎？')) {
-                localStorage.removeItem('wenhua_quiz_mistakes');
+            if (confirm("確定要清空所有錯題嗎？")) {
+                localStorage.removeItem('wenhua_mistakes');
                 updateMistakeBadge();
                 renderMistakesPage();
             }
         }
 
-        function updateMistakeBadge() {
-            const count = getStoredMistakes().length;
-            document.getElementById('mistake-count').textContent = count;
-        }
-
-        function renderMistakesPage() {
-            const mistakes = getStoredMistakes();
-            const container = document.getElementById('mistakes-list-container');
-            const startBtn = document.getElementById('start-mistake-btn');
-            container.innerHTML = '';
-
-            if (mistakes.length === 0) {
-                container.innerHTML = `<div class="text-center py-12 text-slate-400 text-xl font-bold">目前沒有累積錯題，太棒了！繼續保持！</div>`;
-                startBtn.classList.add('hidden');
-                return;
-            }
-
-            startBtn.classList.remove('hidden');
-            mistakes.forEach((q) => {
-                let modeName = '校內注音';
-                if (q.mode === 'character') modeName = '校內國字';
-                else if (q.mode === 'handwriting') modeName = '手寫練字';
-                else modeName = q.mode;
-
-                const modeTag = `<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs ml-2">${modeName}</span>`;
-                
-                const div = document.createElement('div');
-                div.className = "p-5 rounded-2xl border-2 border-slate-100 bg-slate-50 flex flex-col gap-2";
-                
-                const headerDiv = document.createElement('div');
-                headerDiv.className = "flex justify-between items-start";
-                
-                const spanTag = document.createElement('span');
-                spanTag.className = "font-bold text-indigo-600 text-sm";
-                spanTag.innerHTML = `[${q.category || '字形辨正'}] ${modeTag}`;
-
-                const delBtn = document.createElement('button');
-                delBtn.className = "text-rose-500 hover:text-rose-700 text-sm font-bold";
-                delBtn.textContent = "刪除此題";
-                delBtn.onclick = () => deleteOneMistake(q.question, q.mode);
-
-                headerDiv.appendChild(spanTag);
-                headerDiv.appendChild(delBtn);
-
-                const qDiv = document.createElement('div');
-                qDiv.className = "text-xl font-bold text-slate-700";
-                qDiv.textContent = q.question;
-
-                const ansDiv = document.createElement('div');
-                ansDiv.className = "text-sm text-slate-500";
-                ansDiv.textContent = `正確答案：${q.options ? q.options[q.answer] : ''}`;
-
-                div.appendChild(headerDiv);
-                div.appendChild(qDiv);
-                div.appendChild(ansDiv);
-                container.appendChild(div);
-            });
-        }
-
-        function deleteOneMistake(questionText, mode) {
-            let mistakes = getStoredMistakes();
-            mistakes = mistakes.filter(item => !(item.question === questionText && (item.mode || 'phonetic') === (mode || 'phonetic')));
-            localStorage.setItem('wenhua_quiz_mistakes', JSON.stringify(mistakes));
-            updateMistakeBadge();
-            renderMistakesPage();
-        }
-
         function startMistakePractice() {
-            const mistakes = getStoredMistakes();
+            const mistakes = getMistakes();
             if (mistakes.length === 0) return;
 
+            quizData = shuffleArray(mistakes);
             isMistakeMode = true;
             isRandomMode = false;
-            quizData = shuffleArray(mistakes);
             currentIdx = 0;
             score = 0;
 
             switchMainTab('practice');
             document.getElementById('unit-selection-card').classList.add('hidden');
-            document.getElementById('quiz-result-card').classList.add('hidden');
             document.getElementById('quiz-card').classList.remove('hidden');
-            document.getElementById('back-to-units-btn').classList.add('hidden');
+            document.getElementById('back-to-units-btn').classList.remove('hidden');
             loadQuestion();
         }
 
-        function saveHistoryToStorage(title, score, total) {
+        function getHistory() {
             try {
-                let history = getStoredHistory();
-                const now = new Date();
-                const timeString = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-                
-                history.unshift({
-                    title: title,
-                    score: score,
-                    total: total,
-                    time: timeString
-                });
-
-                if (history.length > 50) history.pop();
-                localStorage.setItem('wenhua_quiz_history', JSON.stringify(history));
-            } catch (e) {}
-        }
-
-        function getStoredHistory() {
-            try {
-                const data = localStorage.getItem('wenhua_quiz_history');
-                return data ? JSON.parse(data) : [];
+                return JSON.parse(localStorage.getItem('wenhua_history') || '[]');
             } catch (e) {
                 return [];
             }
         }
 
-        function clearHistory() {
-            if (confirm('確定要清除所有學習歷程記錄嗎？')) {
-                localStorage.removeItem('wenhua_quiz_history');
-                renderHistoryPage();
-            }
+        function saveHistoryRecord(record) {
+            let history = getHistory();
+            history.unshift(record);
+            if (history.length > 50) history = history.slice(0, 50); // 保留最近 50 筆
+            localStorage.setItem('wenhua_history', JSON.stringify(history));
         }
 
         function renderHistoryPage() {
-            const history = getStoredHistory();
+            const history = getHistory();
             const container = document.getElementById('history-list-container');
             container.innerHTML = '';
 
             if (history.length === 0) {
-                container.innerHTML = `<div class="text-center py-12 text-slate-400 text-xl font-bold">目前尚無練習記錄，快去挑戰單元吧！</div>`;
+                container.innerHTML = `<div class="text-center py-12 text-slate-400 font-bold text-lg">尚無學習記錄，快去挑戰單元吧！</div>`;
                 return;
             }
 
-            history.forEach((item) => {
+            history.forEach(item => {
                 const percentage = Math.round((item.score / item.total) * 100);
-                let badgeColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
-                if (percentage < 60) badgeColor = "bg-rose-50 text-rose-700 border-rose-200";
-                else if (percentage < 80) badgeColor = "bg-amber-50 text-amber-700 border-amber-200";
-
-                const div = document.createElement('div');
-                div.className = "p-4 rounded-2xl border-2 border-slate-100 bg-slate-50 flex justify-between items-center";
-                div.innerHTML = `
-                    <div>
-                        <div class="font-bold text-lg text-slate-700">${item.title}</div>
-                        <div class="text-sm text-slate-400 mt-0.5">${item.time}</div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="px-4 py-1.5 rounded-xl text-lg font-bold border ${badgeColor}">${item.score} / ${item.total} 分 (${percentage}%)</span>
+                let badgeColor = percentage >= 80 ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-amber-50 text-amber-600 border-amber-200';
+                
+                container.innerHTML += `
+                    <div class="p-5 rounded-2xl border-2 border-slate-200 flex justify-between items-center bg-white shadow-sm">
+                        <div>
+                            <div class="text-xs font-bold text-slate-400">${item.date}</div>
+                            <div class="text-lg font-bold text-slate-700 mt-1">${item.mode} — ${item.unit}</div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="px-4 py-2 rounded-xl border-2 font-bold text-lg ${badgeColor}">
+                                ${item.score} / ${item.total} (${percentage}%)
+                            </div>
+                        </div>
                     </div>
                 `;
-                container.appendChild(div);
             });
+        }
+
+        function clearHistory() {
+            if (confirm("確定要清除所有學習記錄嗎？")) {
+                localStorage.removeItem('wenhua_history');
+                renderHistoryPage();
+            }
         }
     </script>
 </body>
