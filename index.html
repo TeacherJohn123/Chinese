@@ -3,354 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文華國小 - 國語文競賽線上特訓 v5.0 全國賽完全版</title>
-    <!-- 引入 Tailwind CSS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>文華國小五年級 - 國語文競賽線上特訓 v4.0 (自訂隨機測驗版)</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between">
 
-    <!-- 頂部導覽列 -->
-    <header class="bg-indigo-700 text-white shadow-lg py-4 px-6 sticky top-0 z-40">
-        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div>
-                <h1 class="text-2xl font-black tracking-wider flex items-center gap-2">
-                    🏆 國語文競賽線上特訓 <span class="text-xs bg-amber-400 text-slate-900 px-2 py-0.5 rounded-full font-bold">v5.0 全國賽完全版</span>
-                </h1>
-                <p class="text-indigo-200 text-xs mt-1">字音字形特訓系統（含 100-105 年全國賽 1200 題）</p>
+    <div class="max-w-3xl mx-auto p-8 w-full mt-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-indigo-600">🏫 文華國小五年級國語文競賽特訓</h1>
+            <p class="text-lg text-slate-500 mt-2">雲端題庫即時同步練習網 v4.0 (自訂隨機測驗版)</p>
+            
+            <!-- 主導覽按鈕 (模式切換與功能面板) -->
+            <div class="flex flex-wrap justify-center gap-3 mt-6">
+                <button onclick="switchMainTab('practice')" id="tab-practice" class="px-5 py-2.5 rounded-2xl font-bold bg-indigo-600 text-white shadow-lg transition">線上特訓</button>
+                <button onclick="switchMainTab('mistakes')" id="tab-mistakes" class="px-5 py-2.5 rounded-2xl font-bold bg-white text-slate-600 border-2 border-slate-200 shadow-sm transition">📖 錯題本 (<span id="mistake-count">0</span>)</button>
+                <button onclick="switchMainTab('history')" id="tab-history" class="px-5 py-2.5 rounded-2xl font-bold bg-white text-slate-600 border-2 border-slate-200 shadow-sm transition">📊 學習歷程</button>
             </div>
-            <!-- 主頁籤切換按鈕 -->
-            <div class="flex gap-2 items-center">
-                <button onclick="switchMainTab('practice')" id="tab-practice" class="px-4 py-2 rounded-xl font-bold bg-white text-indigo-700 shadow-md transition text-sm">📝 題庫練習</button>
-                <button onclick="switchMainTab('mistakes')" id="tab-mistakes" class="px-4 py-2 rounded-xl font-bold bg-indigo-800 text-indigo-200 hover:bg-indigo-600 transition text-sm flex items-center gap-1.5">
-                    ❌ 錯題本 <span id="mistake-count-badge" class="bg-rose-500 text-white px-1.5 py-0.2 rounded-full text-xs font-black">0</span>
-                </button>
-                <button onclick="switchMainTab('history')" id="tab-history" class="px-4 py-2 rounded-xl font-bold bg-indigo-800 text-indigo-200 hover:bg-indigo-600 transition text-sm">📊 學習歷程</button>
-            </div>
-        </div>
-    </header>
+        </header>
 
-    <!-- 主要內容區 -->
-    <main class="max-w-4xl w-full mx-auto p-4 sm:p-6 my-4 flex-grow">
-
-        <!-- ================= 畫面一：題庫練習區 ================= -->
+        <!-- ================= 畫面一：線上特訓（分項選擇與單元闖關） ================= -->
         <div id="view-practice" class="space-y-6">
+            <!-- 分類選擇 (注音 / 國字 / 手寫) -->
+            <div class="flex justify-center gap-4 flex-wrap">
+                <button onclick="changeCategory('注音', false, false)" id="btn-zhuyin" class="px-6 py-3 rounded-2xl text-lg font-bold bg-indigo-600 text-white shadow-lg transition">注音特訓 (選擇題)</button>
+                <button onclick="changeCategory('國字', false, false)" id="btn-guazi" class="px-6 py-3 rounded-2xl text-lg font-bold bg-white text-slate-600 border-2 border-slate-200 transition">國字字形 (選擇題)</button>
+                <button onclick="changeCategory('國字', false, true)" id="btn-handwriting" class="px-6 py-3 rounded-2xl text-lg font-bold bg-white text-slate-600 border-2 border-slate-200 transition">看注音寫國字 (手寫)</button>
+            </div>
 
-            <!-- 頂部功能導覽（返回單元與進度） -->
-            <div id="quiz-top-bar" class="hidden flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border-2 border-slate-200">
-                <button onclick="backToUnitSelection()" id="back-to-units-btn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl transition text-sm flex items-center gap-1">
+            <!-- 載入中狀態 -->
+            <div id="loading" class="text-center py-16 text-slate-400 text-xl font-bold">正在從雲端載入題庫中...</div>
+
+            <!-- 單元選擇清單區 -->
+            <div id="unit-selection-card" class="bg-white rounded-3xl shadow-xl p-8 border-2 border-slate-200 hidden">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                    <h3 id="current-category-title" class="text-2xl font-bold text-slate-700">選擇練習單元（每 25 題為一個闖關單元）</h3>
+                    <div class="flex gap-2">
+                        <!-- 新增的自訂測驗按鈕 -->
+                        <button onclick="openRandomQuizModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl transition font-bold shadow flex items-center gap-1">
+                            🎲 自訂隨機測驗
+                        </button>
+                        <button onclick="refreshCategoryCache()" class="text-sm bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-xl transition font-bold" title="若老師有更新題目可點擊強制重新從雲端載入">
+                            🔄 重新整理題庫
+                        </button>
+                    </div>
+                </div>
+                <div id="unit-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- 動態產生單元按鈕 -->
+                </div>
+            </div>
+
+            <!-- 測驗主卡片 -->
+            <div id="quiz-card" class="bg-white rounded-3xl shadow-xl p-10 border-2 border-slate-200 hidden">
+                <div class="flex justify-between text-lg font-bold text-slate-400 mb-8">
+                    <span id="question-progress">題目 1 / 25</span>
+                    <span id="question-category" class="bg-indigo-50 text-indigo-600 px-4 py-1.5 rounded-xl text-sm font-bold">字形辨正</span>
+                </div>
+                
+                <!-- 特大題目字體 -->
+                <h2 id="question-title" class="text-4xl md:text-5xl font-bold mb-10 text-slate-700 leading-relaxed text-center"></h2>
+                
+                <!-- 2x2 田字格選項排版 (選擇題模式) -->
+                <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+
+                <!-- 手寫模式專屬區塊 -->
+                <div id="handwriting-container" class="hidden flex flex-col items-center gap-6 mt-4">
+                    <button id="btn-show-answer" onclick="showAnswer()" class="bg-amber-500 hover:bg-amber-600 text-white px-10 py-5 rounded-2xl font-bold text-2xl shadow-lg transition w-full md:w-auto">
+                        🔍 顯示解答，自己對答案
+                    </button>
+
+                    <div id="handwriting-answer-area" class="hidden flex flex-col items-center gap-6 w-full">
+                        <div class="text-xl text-slate-500 font-bold">正確的國字是：</div>
+                        <div id="handwriting-correct-answer" class="text-7xl font-bold text-emerald-600 bg-emerald-50 px-16 py-8 rounded-3xl border-4 border-emerald-200 shadow-inner"></div>
+
+                        <div class="text-lg text-slate-600 mt-4 font-bold">請誠實自評：</div>
+                        <div id="handwriting-eval-buttons" class="flex gap-4 w-full justify-center">
+                            <button onclick="selfEvaluate(true)" class="flex-1 max-w-[220px] bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-4 rounded-2xl font-bold text-xl shadow-lg transition">✨ 我寫對了</button>
+                            <button onclick="selfEvaluate(false)" class="flex-1 max-w-[220px] bg-rose-500 hover:bg-rose-600 text-white px-6 py-4 rounded-2xl font-bold text-xl shadow-lg transition">❌ 我寫錯了</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="result-feedback" class="mt-8 hidden p-6 rounded-2xl text-2xl font-bold text-center"></div>
+            </div>
+
+            <!-- 測驗結算專屬卡片 -->
+            <div id="quiz-result-card" class="bg-white rounded-3xl shadow-xl p-10 border-2 border-slate-200 hidden">
+                <div class="text-center py-12">
+                    <h2 class="text-4xl font-bold text-slate-700 mb-4">🎉 測驗完成！</h2>
+                    <p class="text-2xl text-slate-600 mb-10">你的總得分：<span id="final-score" class="text-indigo-600 font-bold text-4xl">0</span> / <span id="total-questions">25</span></p>
+                    <div class="flex justify-center gap-4 flex-wrap">
+                        <button onclick="returnToUnitsFromResult()" class="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-xl shadow-lg hover:bg-indigo-700 transition">回到單元列表</button>
+                        <button onclick="switchMainTab('history')" class="bg-slate-200 text-slate-700 px-8 py-4 rounded-2xl font-bold text-xl shadow hover:bg-slate-300 transition">查看歷史記錄</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 下一題與返回按鈕 -->
+            <div class="flex justify-between items-center">
+                <button id="back-to-units-btn" onclick="returnToUnits()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-3 rounded-2xl font-bold text-lg hidden transition">
                     ⬅ 返回單元列表
                 </button>
-                <div id="quiz-progress-text" class="font-bold text-slate-600 text-sm">進度：0 / 0</div>
+                <button id="next-btn" onclick="nextQuestion()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-2xl font-bold text-2xl hidden shadow-lg transition ml-auto">
+                    下一題 ➔
+                </button>
             </div>
-
-            <!-- 1️⃣ 第一層：選擇題庫大分類（校內 vs 全國賽） -->
-            <div id="library-selection-card" class="bg-white rounded-3xl shadow-xl p-6 sm:p-8 border-2 border-slate-200 space-y-6">
-                <div class="flex justify-between items-center">
-                    <div></div>
-                    <button onclick="forceRefreshCache()" class="bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 text-slate-600 font-bold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1">
-                        🔄 強制重新整理題庫 (清除快取)
-                    </button>
-                </div>
-                <div class="text-center space-y-2">
-                    <h2 class="text-2xl font-black text-slate-700">🎯 請選擇練習題庫來源</h2>
-                    <p class="text-slate-400 text-sm">您可以選擇基礎校內練習，或挑戰高難度的歷屆全國賽題庫！[cite: 1]</p>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <!-- 校內基礎題庫卡片 -->
-                    <button onclick="selectLibrary('base')" class="p-6 rounded-2xl border-4 border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 hover:border-indigo-400 transition text-left flex flex-col justify-between group shadow-sm">
-                        <div>
-                            <div class="text-3xl mb-2">📘</div>
-                            <div class="text-xl font-black text-indigo-900 group-hover:text-indigo-600">校內基礎特訓題庫</div>
-                            <div class="text-sm text-slate-500 mt-1">適合日常單元練習，穩扎穩打建立字音字形基本功。</div>
-                        </div>
-                        <div class="mt-6 flex items-center gap-2 text-indigo-600 font-bold text-sm">
-                            進入練習 ➔
-                        </div>
-                    </button>
-
-                    <!-- 全國賽題庫卡片 -->
-                    <button onclick="selectLibrary('national')" class="p-6 rounded-2xl border-4 border-amber-100 bg-amber-50/50 hover:bg-amber-50 hover:border-amber-400 transition text-left flex flex-col justify-between group shadow-sm">
-                        <div>
-                            <div class="text-3xl mb-2">🏆</div>
-                            <div class="text-xl font-black text-amber-900 group-hover:text-amber-600">100-105年全國賽題庫</div>
-                            <div class="text-sm text-slate-500 mt-1">歷屆全國語文競賽精選 1200 題，依年份循序漸進挑戰！[cite: 1]</div>
-                        </div>
-                        <div class="mt-6 flex items-center gap-2 text-amber-600 font-bold text-sm">
-                            進入全國賽挑戰 ➔
-                        </div>
-                    </button>
-                </div>
-            </div>
-
-            <!-- 2️⃣ 第二層：練習模式與單元選擇卡片 -->
-            <div id="unit-selection-card" class="bg-white rounded-3xl shadow-xl p-6 sm:p-8 border-2 border-slate-200 space-y-6 hidden">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-4">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="backToLibrarySelection()" class="text-slate-400 hover:text-slate-600 text-sm font-bold">⬅ 切換題庫</button>
-                            <span class="text-slate-300">|</span>
-                            <h2 id="library-title-heading" class="text-2xl font-black text-slate-700">單元選擇</h2>
-                        </div>
-                        <p class="text-slate-400 text-sm mt-0.5">請選擇您想練習的模式與單元，挑戰 80% 通關與滿分紀錄！[cite: 1, 3]</p>
-                    </div>
-                    <!-- 綜合隨機測驗按鈕 -->
-                    <button onclick="openCustomQuizModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-md transition text-sm flex items-center gap-1.5 w-full sm:w-auto justify-center">
-                        🎲 範圍自訂隨機測驗
-                    </button>
-                </div>
-
-                <!-- 練習模式切換按鈕 -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <button onclick="setMode('注音')" id="mode-btn-phonetic" class="p-3 rounded-xl font-bold border-2 transition text-sm flex items-center justify-center gap-2 bg-indigo-600 text-white border-indigo-600 shadow-sm">
-                        🔤 注音選擇題
-                    </button>
-                    <button onclick="setMode('國字')" id="mode-btn-character" class="p-3 rounded-xl font-bold border-2 transition text-sm flex items-center justify-center gap-2 bg-white text-slate-600 border-slate-200 hover:bg-slate-50">
-                        ✍️ 國字字形選擇題
-                    </button>
-                    <button onclick="setMode('手寫')" id="mode-btn-handwriting" class="p-3 rounded-xl font-bold border-2 transition text-sm flex items-center justify-center gap-2 bg-white text-slate-600 border-slate-200 hover:bg-slate-50">
-                        📝 看注音寫國字 (手寫自評)[cite: 2, 3]
-                    </button>
-                </div>
-
-                <!-- 單元列表容器（支援年份摺疊分組） -->
-                <div id="units-container" class="space-y-4 max-h-[550px] overflow-y-auto pr-1">
-                    <!-- 動態渲染單元按鈕 -->
-                </div>
-            </div>
-
-            <!-- 3️⃣ 第三層：實際測驗進行中卡片 -->
-            <div id="quiz-card" class="bg-white rounded-3xl shadow-xl p-6 sm:p-10 border-2 border-slate-200 hidden space-y-6">
-                <!-- 題目標頭資訊 -->
-                <div class="flex justify-between items-center text-sm font-bold text-slate-400 border-b pb-3">
-                    <span id="quiz-category-tag" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-xl border border-indigo-200">注音特訓</span>
-                    <span id="quiz-counter">第 1 題 / 共 25 題</span>
-                </div>
-
-                <!-- 題目顯示區 -->
-                <div class="text-center py-6 space-y-4">
-                    <div id="quiz-question-sub" class="text-slate-500 font-bold text-lg">請根據提示選出正確答案</div>
-                    <div id="quiz-question-main" class="text-4xl sm:text-5xl font-black text-slate-800 tracking-wider">載入中...</div>
-                </div>
-
-                <!-- 選擇題選項容器 -->
-                <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                    <!-- 動態生成選項 -->
-                </div>
-
-                <!-- 手寫自評模式操作區 (預設隱藏) -->
-                <div id="handwriting-panel" class="hidden space-y-4 pt-2">
-                    <div class="bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center space-y-3">
-                        <div class="text-slate-400 text-sm">💡 請準備一張紙筆，寫出正確國字後，點擊下方按鈕查看答案：</div>
-                        <button onclick="revealHandwritingAnswer()" id="reveal-ans-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-6 py-3 rounded-xl shadow transition text-lg">
-                            👁️ 顯示正確答案與解析
-                        </button>
-                        <div id="handwriting-answer-box" class="hidden space-y-3 pt-2 border-t border-slate-200">
-                            <div class="text-sm text-slate-500">正確答案：</div>
-                            <div id="handwriting-correct-text" class="text-3xl font-black text-emerald-600">--</div>
-                        </div>
-                    </div>
-
-                    <!-- 自評按鈕 -->
-                    <div id="handwriting-grade-buttons" class="hidden grid grid-cols-2 gap-4">
-                        <button onclick="gradeHandwriting(false)" class="bg-rose-50 hover:bg-rose-100 border-2 border-rose-300 text-rose-700 font-black py-4 rounded-2xl text-lg shadow transition flex items-center justify-center gap-2">
-                            ❌ 我寫錯了 / 不會
-                        </button>
-                        <button onclick="gradeHandwriting(true)" class="bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-300 text-emerald-700 font-black py-4 rounded-2xl text-lg shadow transition flex items-center justify-center gap-2">
-                            ⭕ 我答對了 / 會寫
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 答題解析與下一題按鈕 -->
-                <div id="explanation-container" class="hidden bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 space-y-2">
-                    <div class="font-bold text-slate-700 text-sm flex items-center gap-1.5">
-                        <span id="result-icon">✅</span> <span>解析說明：</span>
-                    </div>
-                    <div id="explanation-text" class="text-slate-600 text-sm leading-relaxed"></div>
-                </div>
-
-                <div class="flex justify-end pt-4">
-                    <button onclick="nextQuestion()" id="next-btn" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 py-3.5 rounded-2xl shadow-lg transition text-base">
-                        下一題 ➔
-                    </button>
-                </div>
-            </div>
-
-            <!-- 4️⃣ 測驗結算卡片 -->
-            <div id="quiz-result-card" class="bg-white rounded-3xl shadow-xl p-8 border-2 border-slate-200 hidden text-center space-y-6">
-                <div class="text-5xl">🎉</div>
-                <div class="space-y-2">
-                    <h2 class="text-3xl font-black text-slate-700">單元測驗完成！</h2>
-                    <p id="result-subtitle" class="text-slate-400 text-sm">太棒了，你已經完成本單元的練習挑戰！</p>
-                </div>
-
-                <div class="py-6 bg-slate-50 rounded-2xl border-2 border-slate-100 max-w-sm mx-auto space-y-2">
-                    <div class="text-slate-400 text-sm font-bold">本次測驗得分</div>
-                    <div id="result-score-text" class="text-5xl font-black text-indigo-600">25 / 25</div>
-                    <div id="result-badge-text" class="text-sm font-bold text-emerald-600 pt-1">🌟 恭喜獲得滿分制霸！</div>
-                </div>
-
-                <div class="flex justify-center gap-4 pt-2">
-                    <button onclick="restartCurrentUnit()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-6 py-3 rounded-xl transition text-base">
-                        🔄 再次挑戰
-                    </button>
-                    <button onclick="backToUnitSelection()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition text-base">
-                        📁 返回單元列表
-                    </button>
-                </div>
-            </div>
-
         </div>
 
-        <!-- ================= 畫面二：錯題本記錄 ================= -->
+        <!-- ================= 畫面二：錯題本專區 ================= -->
         <div id="view-mistakes" class="bg-white rounded-3xl shadow-xl p-8 border-2 border-slate-200 hidden space-y-6">
             <div class="flex justify-between items-center border-b pb-4">
-                <div>
-                    <h2 class="text-2xl font-black text-slate-700">❌ 個人錯題本專區</h2>
-                    <p class="text-slate-400 text-sm mt-0.5">收集您在練習過程中答錯的題目，集中複習印象更深刻！</p>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="startMistakeQuiz()" id="start-mistake-quiz-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl transition text-sm shadow">
-                        🚀 錯題大特訓 (開始測驗)
-                    </button>
-                    <button onclick="clearMistakes()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2.5 rounded-xl font-bold transition text-sm">
-                        清空錯題
-                    </button>
+                <h2 class="text-2xl font-bold text-slate-700">📖 我的專屬錯題本</h2>
+                <div class="space-x-2">
+                    <button onclick="startMistakePractice()" id="start-mistake-btn" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2.5 rounded-xl font-bold shadow transition hidden">開始錯題特訓</button>
+                    <button onclick="clearMistakes()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2.5 rounded-xl font-bold transition text-sm">清空錯題本</button>
                 </div>
             </div>
-            <div id="mistakes-list-container" class="space-y-3 max-h-[500px] overflow-y-auto">
-                <!-- 動態載入錯題 -->
+            <p class="text-slate-500 text-sm">這裡會長期記錄您在各單元答錯的題目，手寫模式或選擇題模式的錯題都會被記錄下來！</p>
+            <div id="mistakes-list-container" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                <!-- 動態載入錯題列表 -->
             </div>
         </div>
 
         <!-- ================= 畫面三：學習歷程記錄 ================= -->
         <div id="view-history" class="bg-white rounded-3xl shadow-xl p-8 border-2 border-slate-200 hidden space-y-6">
             <div class="flex justify-between items-center border-b pb-4">
-                <div>
-                    <h2 class="text-2xl font-black text-slate-700">📊 學習歷程與成績記錄</h2>
-                    <p class="text-slate-400 text-sm mt-0.5">系統自動幫您記錄每次挑戰的成績與通關徽章。</p>
-                </div>
+                <h2 class="text-2xl font-bold text-slate-700">📊 學習歷程與成績記錄</h2>
                 <button onclick="clearHistory()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2.5 rounded-xl font-bold transition text-sm">清除歷史記錄</button>
             </div>
             <div id="history-list-container" class="space-y-3 max-h-[500px] overflow-y-auto">
                 <!-- 動態載入歷史成績 -->
             </div>
         </div>
+    </div>
 
-    </main>
-
-    <!-- 🎲 自訂範圍隨機測驗 Modal 彈跳視窗 -->
-    <div id="custom-quiz-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 border-2 border-slate-200 space-y-6 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b pb-4">
-                <h3 class="text-xl font-black text-slate-700">🎲 自訂範圍隨機測驗</h3>
-                <button onclick="closeCustomQuizModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+    <!-- ================= 隨機測驗設定 Modal ================= -->
+    <div id="random-quiz-modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl shadow-2xl p-6 md:p-8 max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h3 class="text-2xl font-bold text-slate-700">🎲 自訂跨單元隨機測驗</h3>
+                <button onclick="closeRandomQuizModal()" class="text-slate-400 hover:text-slate-600 text-3xl font-bold">&times;</button>
             </div>
-
-            <div class="space-y-4">
-                <div class="space-y-2">
-                    <label class="text-sm font-bold text-slate-600">1. 選擇題庫範圍：</label>
-                    <div id="modal-library-badge" class="font-black text-indigo-600 bg-indigo-50 px-3 py-2 rounded-xl border border-indigo-200 inline-block">
-                        目前範圍：校內基礎題庫
+            
+            <div class="overflow-y-auto pr-2 flex-grow space-y-6">
+                <div>
+                    <p class="font-bold text-slate-600 mb-3 text-lg">1. 請勾選測驗單元 <span class="text-sm text-slate-400 font-normal">(最少需勾選 2 個)</span></p>
+                    <div id="modal-unit-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <!-- JavaScript 動態產生 checkbox -->
                     </div>
                 </div>
-
-                <div class="space-y-2">
-                    <div class="flex justify-between items-center">
-                        <label class="text-sm font-bold text-slate-600">2. 勾選要抽題的單元：</label>
-                        <div class="space-x-2">
-                            <button onclick="toggleAllModalUnits(true)" class="text-xs text-indigo-600 font-bold hover:underline">全選</button>
-                            <span class="text-slate-300">|</span>
-                            <button onclick="toggleAllModalUnits(false)" class="text-xs text-slate-600 font-bold hover:underline">取消全選</button>
-                        </div>
+                
+                <div>
+                    <p class="font-bold text-slate-600 mb-3 text-lg">2. 選擇隨機抽題數量</p>
+                    <div class="flex flex-wrap gap-6 bg-slate-50 p-4 rounded-2xl border-2 border-slate-100">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="random-count" value="25" class="w-5 h-5 accent-indigo-600" checked onchange="updateRandomQuizUI()">
+                            <span class="text-lg font-bold text-slate-700">25 題</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="random-count" value="50" class="w-5 h-5 accent-indigo-600" onchange="updateRandomQuizUI()">
+                            <span class="text-lg font-bold text-slate-700">50 題</span>
+                        </label>
+                        <label id="label-count-100" class="flex items-center gap-2 cursor-pointer text-slate-400">
+                            <input type="radio" name="random-count" value="100" id="radio-count-100" class="w-5 h-5 accent-indigo-600" disabled onchange="updateRandomQuizUI()">
+                            <span class="text-lg font-bold">100 題</span>
+                        </label>
                     </div>
-                    <!-- 快捷全選按鈕區 (特別針對全國賽提供年份快捷) -->
-                    <div id="modal-quick-buttons" class="flex flex-wrap gap-1.5 pb-1 hidden">
-                        <!-- 動態插入年份快捷按鈕 -->
-                    </div>
-                    <div id="modal-units-checkboxes" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto p-3 bg-slate-50 rounded-xl border border-slate-200">
-                        <!-- 動態生成勾選方塊 -->
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-sm font-bold text-slate-600">3. 抽題數量：</label>
-                    <select id="custom-quiz-count" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 font-bold text-slate-700 focus:outline-indigo-600">
-                        <option value="10">10 題快問快答</option>
-                        <option value="25" selected>25 題標準挑戰</option>
-                        <option value="50">50 題強力特訓</option>
-                        <option value="100">100 題大魔王挑戰</option>
-                    </select>
+                    <p id="modal-warning" class="text-rose-500 text-sm font-bold mt-3 hidden">⚠️ 提示訊息</p>
                 </div>
             </div>
-
-            <div class="flex justify-end gap-3 pt-2 border-t">
-                <button onclick="closeCustomQuizModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-5 py-2.5 rounded-xl transition">取消</button>
-                <button onclick="startCustomQuiz()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg transition">開始隨機測驗 🚀</button>
+            
+            <div class="mt-6 pt-6 border-t flex justify-end gap-4">
+                <button onclick="closeRandomQuizModal()" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition">取消</button>
+                <button id="btn-start-random" onclick="startRandomQuiz()" class="px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl transition shadow-lg opacity-50 cursor-not-allowed" disabled>
+                    開始測驗
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- 頁尾 -->
-    <footer class="bg-white border-t border-slate-200 py-6 text-center text-slate-400 text-sm">
-        <p>文華國小五年級 🏆 國語文競賽線上特訓系統 v5.0 全國賽完全版 ｜ 雲端題庫即時同步</p>
-    </footer>
-
-    <!-- 前端核心 JavaScript 邏輯 -->
     <script>
-        // 綁定您的 Google Apps Script API 網址
+        // 綁定 Google Apps Script 網址
         const API_URL = "https://script.google.com/macros/s/AKfycby730wJM6SxtCjnu_1abKeIosFmQPNlNDe5znncIpXkHYaBSgTJ9by9KTLvyPQh2Z5QiA/exec";
 
-        // 全域變數狀態
-        let currentLibraryType = 'base'; // 'base' (校內) 或 'national' (全國賽)
-        let currentCategoryName = '注音'; // '注音' 或 '國字'
-        let currentPracticeMode = 'phonetic'; // 'phonetic', 'character', 'handwriting'
-        
+        let currentCategoryName = '注音';
+        let isHandwritingMode = false; 
         let rawCategoryData = []; 
-        let unitsList = []; 
-        let currentUnitIdx = 0; 
-        let quizData = []; 
-        let currentIdx = 0; 
-        let score = 0; 
-        let answered = false; 
+        let unitsList = [];        
+        let currentUnitIdx = 0;   
+        let quizData = [];        
+        let currentIdx = 0;
+        let score = 0;
+        let answered = false;
         let isMistakeMode = false; 
-        let isCustomQuizMode = false; 
-
-        // 記憶體快取物件
-        let dataCache = {};
+        let isRandomMode = false; // 新增隨機模式狀態
 
         window.onload = function() {
             updateMistakeBadge();
+            changeCategory('注音', false, false);
         };
 
-        // 強制清除快取並重新載入
-        function forceRefreshCache() {
-            dataCache = {};
-            alert('已成功清除本地題庫快取！下次點擊將重新向 Google 雲端抓取最新題目。');
-        }
-
-        // 切換三大主頁籤
         function switchMainTab(tabName) {
             document.getElementById('view-practice').classList.add('hidden');
             document.getElementById('view-mistakes').classList.add('hidden');
             document.getElementById('view-history').classList.add('hidden');
             document.getElementById('quiz-result-card').classList.add('hidden');
 
-            document.getElementById('tab-practice').className = "px-4 py-2 rounded-xl font-bold bg-indigo-800 text-indigo-200 hover:bg-indigo-600 transition text-sm";
-            document.getElementById('tab-mistakes').className = "px-4 py-2 rounded-xl font-bold bg-indigo-800 text-indigo-200 hover:bg-indigo-600 transition text-sm flex items-center gap-1.5";
-            document.getElementById('tab-history').className = "px-4 py-2 rounded-xl font-bold bg-indigo-800 text-indigo-200 hover:bg-indigo-600 transition text-sm";
+            document.getElementById('tab-practice').className = "px-5 py-2.5 rounded-2xl font-bold bg-white text-slate-600 border-2 border-slate-200 shadow-sm transition";
+            document.getElementById('tab-mistakes').className = "px-5 py-2.5 rounded-2xl font-bold bg-white text-slate-600 border-2 border-slate-200 shadow-sm transition";
+            document.getElementById('tab-history').className = "px-5 py-2.5 rounded-2xl font-bold bg-white text-slate-600 border-2 border-slate-200 shadow-sm transition";
 
             if (tabName === 'practice') {
                 document.getElementById('view-practice').classList.remove('hidden');
-                document.getElementById('tab-practice').className = "px-4 py-2 rounded-xl font-bold bg-white text-indigo-700 shadow-md transition text-sm";
+                document.getElementById('tab-practice').className = "px-5 py-2.5 rounded-2xl font-bold bg-indigo-600 text-white shadow-lg transition";
             } else if (tabName === 'mistakes') {
                 document.getElementById('view-mistakes').classList.remove('hidden');
-                document.getElementById('tab-mistakes').className = "px-4 py-2 rounded-xl font-bold bg-indigo-600 text-white shadow-lg transition text-sm flex items-center gap-1.5";
+                document.getElementById('tab-mistakes').className = "px-5 py-2.5 rounded-2xl font-bold bg-indigo-600 text-white shadow-lg transition";
                 renderMistakesPage();
             } else if (tabName === 'history') {
                 document.getElementById('view-history').classList.remove('hidden');
-                document.getElementById('tab-history').className = "px-4 py-2 rounded-xl font-bold bg-indigo-600 text-white shadow-lg transition text-sm";
+                document.getElementById('tab-history').className = "px-5 py-2.5 rounded-2xl font-bold bg-indigo-600 text-white shadow-lg transition";
                 renderHistoryPage();
             }
         }
@@ -364,301 +236,321 @@
             return arr;
         }
 
-        function selectLibrary(type) {
-            currentLibraryType = type;
-            document.getElementById('library-selection-card').classList.add('hidden');
-            document.getElementById('unit-selection-card').classList.remove('hidden');
+        async function changeCategory(sheetName, forceRefresh = false, handwriting = false) {
+            currentCategoryName = sheetName;
+            isHandwritingMode = handwriting;
+            isMistakeMode = false;
+            isRandomMode = false;
             
-            if (type === 'base') {
-                document.getElementById('library-title-heading').innerText = "校內基礎特訓題庫";
-                setMode('注音');
-            } else {
-                document.getElementById('library-title-heading').innerText = "100-105年全國賽題庫";
-                setMode('注音');
-            }
-        }
-
-        function backToLibrarySelection() {
             document.getElementById('unit-selection-card').classList.add('hidden');
-            document.getElementById('library-selection-card').classList.remove('hidden');
-        }
+            document.getElementById('quiz-card').classList.add('hidden');
+            document.getElementById('quiz-result-card').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            document.getElementById('back-to-units-btn').classList.add('hidden');
 
-        async function setMode(mode) {
-            currentPracticeMode = mode;
-            
-            document.getElementById('mode-btn-phonetic').className = "p-3 rounded-xl font-bold border-2 transition text-sm flex items-center justify-center gap-2 bg-white text-slate-600 border-slate-200 hover:bg-slate-50";
-            document.getElementById('mode-btn-character').className = "p-3 rounded-xl font-bold border-2 transition text-sm flex items-center justify-center gap-2 bg-white text-slate-600 border-slate-200 hover:bg-slate-50";
-            document.getElementById('mode-btn-handwriting').className = "p-3 rounded-xl font-bold border-2 transition text-sm flex items-center justify-center gap-2 bg-white text-slate-600 border-slate-200 hover:bg-slate-50";
+            document.getElementById('btn-zhuyin').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-white text-slate-600 border-2 border-slate-200 transition";
+            document.getElementById('btn-guazi').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-white text-slate-600 border-2 border-slate-200 transition";
+            document.getElementById('btn-handwriting').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-white text-slate-600 border-2 border-slate-200 transition";
 
-            if (mode === 'phonetic') {
-                currentCategoryName = currentLibraryType === 'base' ? '注音' : '全國賽注音';
-                document.getElementById('mode-btn-phonetic').className = "p-3 rounded-xl font-bold border-2 transition text-sm flex items-center justify-center gap-2 bg-indigo-600 text-white border-indigo-600 shadow-sm";
-            } else if (mode === 'character') {
-                currentCategoryName = currentLibraryType === 'base' ? '國字' : '全國賽國字';
-                document.getElementById('mode-btn-character').className = "p-3 rounded-xl font-bold border-2 transition text-sm flex items-center justify-center gap-2 bg-indigo-600 text-white border-indigo-600 shadow-sm";
-            } else if (mode === 'handwriting') {
-                currentCategoryName = currentLibraryType === 'base' ? '國字' : '全國賽國字';
-                document.getElementById('mode-btn-handwriting').className = "p-3 rounded-xl font-bold border-2 transition text-sm flex items-center justify-center gap-2 bg-indigo-600 text-white border-indigo-600 shadow-sm";
+            if(sheetName === '注音') {
+                document.getElementById('btn-zhuyin').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-indigo-600 text-white shadow-lg transition";
+            } else if (sheetName === '國字' && !handwriting) {
+                document.getElementById('btn-guazi').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-indigo-600 text-white shadow-lg transition";
+            } else if (sheetName === '國字' && handwriting) {
+                document.getElementById('btn-handwriting').className = "px-6 py-3 rounded-2xl text-lg font-bold bg-indigo-600 text-white shadow-lg transition";
             }
 
-            await loadAndRenderUnits();
-        }
+            const cacheKey = `wenhua_cache_${sheetName}`;
+            let rawData = null;
 
-        // 載入題庫
-        async function loadAndRenderUnits() {
-            const container = document.getElementById('units-container');
-            
-            if (dataCache[currentCategoryName]) {
-                rawCategoryData = dataCache[currentCategoryName];
-                renderUnitsList();
-                return;
-            }
-
-            container.innerHTML = `<div class="text-center py-12 text-slate-400 font-bold animate-pulse">⏳ 正在從雲端同步題庫資料中...</div>`;
-
-            try {
-                const response = await fetch(`${API_URL}?sheet=${encodeURIComponent(currentCategoryName)}`);
-                const json = await response.json();
-                if (json && json.data) {
-                    dataCache[currentCategoryName] = json.data;
-                    rawCategoryData = json.data;
-                } else {
-                    throw new Error('資料格式錯誤');
+            if (!forceRefresh) {
+                try {
+                    const cachedData = localStorage.getItem(cacheKey);
+                    if (cachedData) rawData = JSON.parse(cachedData);
+                } catch (e) {
+                    console.log("讀取快取失敗，將重新從雲端抓取");
                 }
-            } catch (e) {
-                container.innerHTML = `<div class="text-center py-12 text-rose-500 font-bold">⚠️ 無法載入雲端題庫，請檢查網路連線或 GAS 服務網址。</div>`;
-                return;
             }
 
-            renderUnitsList();
-        }
-
-        // 渲染單元列表（支援年份摺疊分組與打勾機制）
-        function renderUnitsList() {
-            const container = document.getElementById('units-container');
-            container.innerHTML = '';
-
-            if (rawCategoryData.length === 0) {
-                container.innerHTML = `<div class="text-center py-12 text-slate-400 font-bold">目前該分類尚無題目資料。</div>`;
-                return;
-            }
-
-            const pageSize = 25;
-            unitsList = [];
-            for (let i = 0; i < rawCategoryData.length; i += pageSize) {
-                unitsList.push(rawCategoryData.slice(i, i + pageSize));
-            }
-
-            if (currentLibraryType === 'base') {
-                const grid = document.createElement('div');
-                grid.className = "grid grid-cols-1 sm:grid-cols-2 gap-3";
-                
-                unitsList.forEach((unit, idx) => {
-                    grid.appendChild(createUnitCardElement(unit, idx, `第 ${idx + 1} 單元 (${idx * 25 + 1}~${Math.min((idx + 1) * 25, rawCategoryData.length)}題)`));
-                });
-                container.appendChild(grid);
-            } else {
-                let yearGroups = {};
-                unitsList.forEach((unit, idx) => {
-                    let categoryVal = unit[0].category ? unit[0].category.trim() : `第 ${Math.floor(idx/4)+100} 年`;
-                    if (!categoryVal.includes('年')) categoryVal = "100年全國賽";
+            if (!rawData || rawData.length === 0) {
+                document.getElementById('loading').classList.remove('hidden');
+                try {
+                    const response = await fetch(`${API_URL}?sheet=${sheetName}`);
+                    rawData = await response.json();
                     
-                    let yearKey = categoryVal.substring(0, 4) + "年全國賽";
-                    if (!yearGroups[yearKey]) yearGroups[yearKey] = [];
-                    yearGroups[yearKey].push({ unitIndex: idx, unitData: unit });
-                });
-
-                for (let yearName in yearGroups) {
-                    const groupWrapper = document.createElement('div');
-                    groupWrapper.className = "border-2 border-slate-200 rounded-2xl p-4 space-y-3 bg-slate-50/50";
-
-                    const headerDiv = document.createElement('div');
-                    headerDiv.className = "flex justify-between items-center font-black text-slate-700 text-lg border-b border-slate-200 pb-2";
-                    headerDiv.innerHTML = `<span>📂 ${yearName}</span> <span class="text-xs bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg">共 ${yearGroups[yearName].length} 個單元</span>`;
-                    groupWrapper.appendChild(headerDiv);
-
-                    const grid = document.createElement('div');
-                    grid.className = "grid grid-cols-1 sm:grid-cols-2 gap-3";
-
-                    yearGroups[yearName].forEach((item, subIdx) => {
-                        let actualIdx = item.unitIndex;
-                        let title = `${yearName.substring(0,3)} 第 ${subIdx + 1} 單元 (${actualIdx * 25 + 1}~${Math.min((actualIdx + 1) * 25, rawCategoryData.length)}題)`;
-                        grid.appendChild(createUnitCardElement(item.unitData, actualIdx, title));
-                    });
-
-                    groupWrapper.appendChild(grid);
-                    container.appendChild(groupWrapper);
+                    if (rawData.error || rawData.length === 0) {
+                        document.getElementById('loading').innerText = "目前該分類沒有題目，請確認 Google 試算表內容與分頁名稱。";
+                        return;
+                    }
+                    localStorage.setItem(cacheKey, JSON.stringify(rawData));
+                } catch (error) {
+                    document.getElementById('loading').innerText = "載入題庫失敗，請檢查網路連線。";
+                    return;
                 }
+                document.getElementById('loading').classList.add('hidden');
+            } else {
+                document.getElementById('loading').classList.add('hidden');
             }
+
+            rawCategoryData = rawData;
+            buildUnits(rawData);
         }
 
-        // 建立單元按鈕 (包含 localStorage 通關打勾與最高分徽章)
-        function createUnitCardElement(unitData, unitIdx, titleText) {
-            const btn = document.createElement('button');
-            const storageKey = `wenhua_score_${currentCategoryName}_${currentPracticeMode}_unit_${unitIdx}`;
-            const savedRecord = JSON.parse(localStorage.getItem(storageKey));
-            
-            let badgeHTML = `<span class="text-xs bg-slate-100 text-slate-400 px-2 py-0.5 rounded-md font-bold">尚未挑戰</span>`;
-            let borderClass = "border-slate-200 hover:border-indigo-400 bg-white hover:bg-indigo-50/30";
+        function refreshCategoryCache() {
+            localStorage.removeItem(`wenhua_cache_${currentCategoryName}`);
+            changeCategory(currentCategoryName, true, isHandwritingMode);
+        }
 
-            if (savedRecord) {
-                const percentage = Math.round((savedRecord.score / savedRecord.total) * 100);
-                if (percentage >= 80) {
-                    borderClass = "border-emerald-200 bg-emerald-50/30 hover:bg-emerald-50";
-                    let badgeText = percentage === 100 ? "🌟 滿分制霸" : "✅ 已通關";
-                    badgeHTML = `<span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md font-bold">${badgeText} (${savedRecord.score}/${savedRecord.total})</span>`;
-                } else {
-                    borderClass = "border-amber-200 bg-amber-50/30 hover:bg-amber-50";
-                    badgeHTML = `<span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md font-bold">⚡ 最高: ${savedRecord.score}/${savedRecord.total} (${percentage}%)</span>`;
-                }
+        function buildUnits(data) {
+            unitsList = [];
+            const chunkSize = 25;
+            for (let i = 0; i < data.length; i += chunkSize) {
+                unitsList.push(data.slice(i, i + chunkSize));
             }
 
-            btn.className = `p-4 rounded-2xl border-2 ${borderClass} transition text-left flex justify-between items-center shadow-xs group`;
-            btn.innerHTML = `
-                <div>
-                    <div class="font-bold text-slate-700 group-hover:text-indigo-600 text-base">${titleText}</div>
-                    <div class="text-xs text-slate-400 mt-1">包含 ${unitData.length} 道精選試題</div>
-                </div>
-                <div>${badgeHTML}</div>
-            `;
+            const unitGrid = document.getElementById('unit-grid');
+            unitGrid.innerHTML = '';
             
-            btn.onclick = () => startUnitQuiz(unitIdx);
-            return btn;
+            let modeTitle = (currentCategoryName === '注音') ? '注音' : (isHandwritingMode ? '看注音寫國字(手寫)' : '國字字形');
+            document.getElementById('current-category-title').innerText = `【${modeTitle}特訓】選擇練習單元`;
+
+            unitsList.forEach((unit, idx) => {
+                const startNum = idx * chunkSize + 1;
+                const endNum = Math.min((idx + 1) * chunkSize, data.length);
+                
+                const btn = document.createElement('button');
+                btn.className = "p-5 rounded-2xl border-2 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 transition flex justify-between items-center text-left group shadow-sm";
+                btn.innerHTML = `
+                    <div>
+                        <div class="text-xl font-bold text-slate-700 group-hover:text-indigo-600">第 ${idx + 1} 單元</div>
+                        <div class="text-sm text-slate-400 mt-1">題目範圍：第 ${startNum} ~ ${endNum} 題 (共 ${unit.length} 題)</div>
+                    </div>
+                    <span class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg group-hover:bg-indigo-600 group-hover:text-white transition">➔</span>
+                `;
+                btn.onclick = () => startUnitQuiz(idx);
+                unitGrid.appendChild(btn);
+            });
+
+            document.getElementById('unit-selection-card').classList.remove('hidden');
         }
 
         function startUnitQuiz(unitIdx) {
             currentUnitIdx = unitIdx;
             isMistakeMode = false;
-            isCustomQuizMode = false;
-            quizData = [...unitsList[unitIdx]];
-            
-            if (currentPracticeMode === 'phonetic' || currentPracticeMode === 'character') {
-                quizData = quizData.map(q => prepareChoiceQuestion(q));
-            }
-            
-            initQuizSession();
-        }
-
-        function prepareChoiceQuestion(q) {
-            let options = [q.optionA, q.optionB, q.optionC, q.optionD].filter(opt => opt && opt.trim() !== "");
-            if (options.length < 2) {
-                options = [q.answer, "選項A", "選項B", "選項C"];
-            }
-            let shuffledOptions = shuffleArray(options);
-            let correctIndex = shuffledOptions.indexOf(q.answer);
-            return {
-                ...q,
-                shuffledOptions: shuffledOptions,
-                correctIndex: correctIndex !== -1 ? correctIndex : 0
-            };
-        }
-
-        function initQuizSession() {
+            isRandomMode = false;
+            quizData = shuffleArray(unitsList[unitIdx]);
             currentIdx = 0;
             score = 0;
-            answered = false;
 
             document.getElementById('unit-selection-card').classList.add('hidden');
-            document.getElementById('library-selection-card').classList.add('hidden');
-            document.getElementById('quiz-card').classList.remove('hidden');
-            document.getElementById('quiz-top-bar').classList.remove('hidden');
             document.getElementById('quiz-result-card').classList.add('hidden');
-
-            let modeNameTag = currentPracticeMode === 'phonetic' ? '🔤 注音選擇題' : (currentPracticeMode === 'character' ? '✍️ 國字字形選擇題' : '📝 看注音寫國字 (手寫自評)');
-            document.getElementById('quiz-category-tag').innerText = `${currentCategoryName} ｜ ${modeNameTag}`;
-
+            document.getElementById('quiz-card').classList.remove('hidden');
+            document.getElementById('back-to-units-btn').classList.remove('hidden');
             loadQuestion();
         }
 
-        function loadQuestion() {
-            answered = false;
+        // ================= 隨機測驗 Modal 邏輯 =================
+        function openRandomQuizModal() {
+            const container = document.getElementById('modal-unit-grid');
+            container.innerHTML = '';
+            
+            unitsList.forEach((_, idx) => {
+                container.innerHTML += `
+                    <label class="flex items-center gap-2 p-3 border-2 rounded-xl cursor-pointer hover:bg-indigo-50 transition border-slate-200 bg-white">
+                        <input type="checkbox" class="modal-unit-checkbox w-5 h-5 accent-indigo-600" value="${idx}" onchange="updateRandomQuizUI()">
+                        <span class="font-bold text-slate-700">第 ${idx + 1} 單元</span>
+                    </label>
+                `;
+            });
+            
+            document.querySelector('input[name="random-count"][value="25"]').checked = true;
+            updateRandomQuizUI();
+            document.getElementById('random-quiz-modal').classList.remove('hidden');
+        }
+
+        function closeRandomQuizModal() {
+            document.getElementById('random-quiz-modal').classList.add('hidden');
+        }
+
+        function updateRandomQuizUI() {
+            const checkboxes = document.querySelectorAll('.modal-unit-checkbox:checked');
+            const checkedCount = checkboxes.length;
+            const btnStart = document.getElementById('btn-start-random');
+            const radio100 = document.getElementById('radio-count-100');
+            const label100 = document.getElementById('label-count-100');
+            const warning = document.getElementById('modal-warning');
+
+            if (checkedCount >= 5) {
+                radio100.disabled = false;
+                label100.classList.remove('text-slate-400');
+                label100.classList.add('text-slate-700');
+            } else {
+                radio100.disabled = true;
+                label100.classList.add('text-slate-400');
+                label100.classList.remove('text-slate-700');
+                if (radio100.checked) {
+                    document.querySelector('input[name="random-count"][value="50"]').checked = true;
+                }
+            }
+
+            if (checkedCount >= 2) {
+                btnStart.disabled = false;
+                btnStart.classList.remove('opacity-50', 'cursor-not-allowed');
+                btnStart.classList.add('hover:bg-indigo-700');
+                
+                if (checkedCount < 5) {
+                    warning.innerText = "⚠️ 再多勾選幾個單元（滿5個），就能解鎖 100 題大挑戰！";
+                    warning.classList.remove('text-rose-500');
+                    warning.classList.add('text-amber-500');
+                    warning.classList.remove('hidden');
+                } else {
+                    warning.classList.add('hidden');
+                }
+            } else {
+                btnStart.disabled = true;
+                btnStart.classList.add('opacity-50', 'cursor-not-allowed');
+                btnStart.classList.remove('hover:bg-indigo-700');
+                
+                warning.innerText = "⚠️ 最少需勾選 2 個單元才能進行隨機測驗";
+                warning.classList.remove('text-amber-500');
+                warning.classList.add('text-rose-500');
+                warning.classList.remove('hidden');
+            }
+        }
+
+        function startRandomQuiz() {
+            const checkboxes = document.querySelectorAll('.modal-unit-checkbox:checked');
+            if (checkboxes.length < 2) return;
+
+            let combinedPool = [];
+            checkboxes.forEach(cb => {
+                const unitIdx = parseInt(cb.value);
+                combinedPool = combinedPool.concat(unitsList[unitIdx]);
+            });
+
+            combinedPool = shuffleArray(combinedPool);
+            const selectedCount = parseInt(document.querySelector('input[name="random-count"]:checked').value);
+            quizData = combinedPool.slice(0, selectedCount);
+            
+            isRandomMode = true;
+            isMistakeMode = false;
+            currentIdx = 0;
+            score = 0;
+
+            closeRandomQuizModal();
+            document.getElementById('unit-selection-card').classList.add('hidden');
+            document.getElementById('quiz-result-card').classList.add('hidden');
+            document.getElementById('quiz-card').classList.remove('hidden');
+            document.getElementById('back-to-units-btn').classList.remove('hidden');
+            
+            loadQuestion();
+        }
+
+        function returnToUnits() {
+            document.getElementById('quiz-card').classList.add('hidden');
             document.getElementById('next-btn').classList.add('hidden');
-            document.getElementById('explanation-container').classList.add('hidden');
+            document.getElementById('back-to-units-btn').classList.add('hidden');
+            document.getElementById('unit-selection-card').classList.remove('hidden');
+        }
 
+        function returnToUnitsFromResult() {
+            document.getElementById('quiz-result-card').classList.add('hidden');
+            document.getElementById('unit-selection-card').classList.remove('hidden');
+        }
+
+        function loadQuestion() {
+            if (quizData.length === 0) return;
+            answered = false;
             const q = quizData[currentIdx];
-            document.getElementById('quiz-counter').innerText = `第 ${currentIdx + 1} 題 / 共 ${quizData.length} 題`;
+            
+            const currentIsHandwriting = isMistakeMode ? q.isHandwriting : isHandwritingMode;
 
-            if (currentPracticeMode === 'phonetic' || currentPracticeMode === 'character') {
-                document.getElementById('options-container').classList.remove('hidden');
-                document.getElementById('handwriting-panel').classList.add('hidden');
+            document.getElementById('question-progress').innerText = `題目 ${currentIdx + 1} / ${quizData.length}`;
+            let catText = isMistakeMode ? "錯題特訓" : (q.category || "字形辨正");
+            if (currentIsHandwriting) catText += " (手寫)";
+            document.getElementById('question-category').innerText = catText;
+            
+            document.getElementById('question-title').innerText = q.question;
+            document.getElementById('result-feedback').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
 
-                document.getElementById('quiz-question-main').innerText = q.question;
-                document.getElementById('quiz-question-sub').innerText = currentPracticeMode === 'phonetic' ? '請選出正確的注音或字音' : '請選出正確的國字字形';
-
-                const optsContainer = document.getElementById('options-container');
-                optsContainer.innerHTML = '';
-
-                q.shuffledOptions.forEach((optText, i) => {
-                    const btn = document.createElement('button');
-                    btn.className = "p-4 rounded-2xl border-2 border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-400 font-bold text-xl text-slate-700 transition shadow-xs text-center";
-                    btn.innerText = optText;
-                    btn.onclick = () => selectOption(i, q.correctIndex);
-                    optsContainer.appendChild(btn);
-                });
-            } else {
+            if (currentIsHandwriting) {
                 document.getElementById('options-container').classList.add('hidden');
-                document.getElementById('handwriting-panel').classList.remove('hidden');
-
-                document.getElementById('quiz-question-main').innerText = q.question;
-                document.getElementById('quiz-question-sub').innerText = '【看注音寫國字】請在紙上寫出正確答案';
-
-                document.getElementById('reveal-ans-btn').classList.remove('hidden');
-                document.getElementById('handwriting-answer-box').classList.add('hidden');
-                document.getElementById('handwriting-grade-buttons').classList.add('hidden');
-                document.getElementById('handwriting-correct-text').innerText = q.answer;
-            }
-        }
-
-        function selectOption(selectedIdx, correctIdx) {
-            if (answered) return;
-            answered = true;
-
-            const q = quizData[currentIdx];
-            const optsContainer = document.getElementById('options-container');
-            const buttons = optsContainer.getElementsByTagName('button');
-
-            if (selectedIdx === correctIdx) {
-                score++;
-                buttons[selectedIdx].className = "p-4 rounded-2xl border-2 border-emerald-400 bg-emerald-100 font-bold text-xl text-emerald-800 shadow-sm text-center";
-                showExplanation(true, q.explanation);
+                document.getElementById('handwriting-container').classList.remove('hidden');
+                
+                document.getElementById('btn-show-answer').classList.remove('hidden');
+                document.getElementById('handwriting-answer-area').classList.add('hidden');
+                document.getElementById('handwriting-eval-buttons').classList.remove('hidden');
             } else {
-                buttons[selectedIdx].className = "p-4 rounded-2xl border-2 border-rose-400 bg-rose-100 font-bold text-xl text-rose-800 shadow-sm text-center";
-                buttons[correctIdx].className = "p-4 rounded-2xl border-2 border-emerald-400 bg-emerald-100 font-bold text-xl text-emerald-800 shadow-sm text-center";
-                showExplanation(false, q.explanation);
-                saveMistakeToStorage(q);
+                document.getElementById('handwriting-container').classList.add('hidden');
+                document.getElementById('options-container').classList.remove('hidden');
+                
+                const container = document.getElementById('options-container');
+                container.innerHTML = '';
+                
+                q.options.forEach((opt, idx) => {
+                    if (!opt) return; 
+                    const btn = document.createElement('button');
+                    btn.className = "w-full p-6 rounded-2xl border-2 border-slate-200 hover:bg-indigo-50 hover:border-indigo-300 transition text-slate-700 font-bold text-2xl flex items-center justify-center shadow-md gap-4";
+                    btn.innerHTML = `<span class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 text-base flex items-center justify-center font-bold shrink-0">${String.fromCharCode(65 + idx)}</span> <span class="text-3xl">${opt}</span>`;
+                    btn.onclick = () => selectOption(idx);
+                    container.appendChild(btn);
+                });
             }
-
-            document.getElementById('next-btn').classList.remove('hidden');
         }
 
-        function revealHandwritingAnswer() {
-            document.getElementById('reveal-ans-btn').classList.add('hidden');
-            document.getElementById('handwriting-answer-box').classList.remove('hidden');
-            document.getElementById('handwriting-grade-buttons').classList.remove('hidden');
+        function showAnswer() {
+            document.getElementById('btn-show-answer').classList.add('hidden');
+            document.getElementById('handwriting-answer-area').classList.remove('hidden');
+            
+            const q = quizData[currentIdx];
+            document.getElementById('handwriting-correct-answer').innerText = q.options[q.answer];
         }
 
-        function gradeHandwriting(isCorrect) {
+        function selfEvaluate(isCorrect) {
             if (answered) return;
             answered = true;
 
             const q = quizData[currentIdx];
+            const feedback = document.getElementById('result-feedback');
+            
+            document.getElementById('handwriting-eval-buttons').classList.add('hidden');
+            feedback.classList.remove('hidden');
+
             if (isCorrect) {
+                feedback.className = "mt-4 p-6 rounded-2xl text-2xl font-bold bg-emerald-50 text-emerald-700 border-2 border-emerald-200";
+                feedback.innerHTML = `<strong>✨ 太棒了，你寫對了！</strong> ${q.explanation || ''}`;
                 score++;
-                showExplanation(true, q.explanation);
+                if (isMistakeMode) removeMistakeFromStorage(q);
             } else {
-                showExplanation(false, q.explanation);
+                feedback.className = "mt-4 p-6 rounded-2xl text-2xl font-bold bg-rose-50 text-rose-700 border-2 border-rose-200";
+                feedback.innerHTML = `<strong>❌ 沒關係，記下來下次就不會錯了。</strong> ${q.explanation || ''}`;
                 saveMistakeToStorage(q);
             }
 
-            document.getElementById('handwriting-grade-buttons').classList.add('hidden');
             document.getElementById('next-btn').classList.remove('hidden');
         }
 
-        function showExplanation(isCorrect, explanationText) {
-            const expBox = document.getElementById('explanation-container');
-            expBox.classList.remove('hidden');
-            document.getElementById('result-icon').innerText = isCorrect ? '✅ 答對了！' : '❌ 答錯囉！';
-            document.getElementById('explanation-text').innerText = explanationText && explanationText.trim() !== "" ? explanationText : "無額外解析說明。正確答案已標示。";
+        function selectOption(selectedIdx) {
+            if (answered) return;
+            answered = true;
+
+            const q = quizData[currentIdx];
+            const feedback = document.getElementById('result-feedback');
+            feedback.classList.remove('hidden');
+
+            if (selectedIdx === q.answer) {
+                feedback.className = "mt-8 p-6 rounded-2xl text-2xl font-bold bg-emerald-50 text-emerald-700 border-2 border-emerald-200";
+                feedback.innerHTML = `<strong>✨ 答對了！</strong> ${q.explanation || ''}`;
+                score++;
+                if (isMistakeMode) removeMistakeFromStorage(q);
+            } else {
+                feedback.className = "mt-8 p-6 rounded-2xl text-2xl font-bold bg-rose-50 text-rose-700 border-2 border-rose-200";
+                feedback.innerHTML = `<strong>❌ 答錯了。</strong> 正確答案是 ${String.fromCharCode(65 + q.answer)}。${q.explanation || ''}`;
+                saveMistakeToStorage(q);
+            }
+
+            document.getElementById('next-btn').classList.remove('hidden');
         }
 
         function nextQuestion() {
@@ -666,64 +558,26 @@
             if (currentIdx < quizData.length) {
                 loadQuestion();
             } else {
-                finishQuiz();
-            }
-        }
-
-        function finishQuiz() {
-            document.getElementById('quiz-card').classList.add('hidden');
-            document.getElementById('quiz-result-card').classList.remove('hidden');
-
-            const total = quizData.length;
-            const percentage = Math.round((score / total) * 100);
-            document.getElementById('result-score-text').innerText = `${score} / ${total} 分`;
-
-            let badgeText = "";
-            if (percentage === 100) badgeText = "🌟 恭喜獲得滿分制霸！太神啦！";
-            else if (percentage >= 80) badgeText = "✅ 恭喜通關！表現非常優秀！";
-            else badgeText = "⚡ 未達 80% 通關標準，再接再厲挑戰一次！";
-            
-            document.getElementById('result-badge-text').innerText = badgeText;
-
-            let titleName = isCustomQuizMode ? "範圍自訂隨機測驗" : (`${currentCategoryName} - 第 ${currentUnitIdx + 1} 單元`);
-            saveHistoryToStorage(titleName, score, total);
-
-            if (!isCustomQuizMode && !isMistakeMode) {
-                const storageKey = `wenhua_score_${currentCategoryName}_${currentPracticeMode}_unit_${currentUnitIdx}`;
-                const existing = JSON.parse(localStorage.getItem(storageKey));
-                if (!existing || score > existing.score) {
-                    localStorage.setItem(storageKey, JSON.stringify({ score: score, total: total }));
+                let modeTitle = (currentCategoryName === '注音') ? '注音' : (isHandwritingMode ? '手寫練字' : '國字字形');
+                
+                if (isMistakeMode) {
+                    saveHistoryToStorage(`錯題特訓複習`, score, quizData.length);
+                } else if (isRandomMode) {
+                    saveHistoryToStorage(`${modeTitle} - 隨機綜合測驗 (${quizData.length}題)`, score, quizData.length);
+                } else {
+                    saveHistoryToStorage(`${modeTitle} - 第 ${currentUnitIdx + 1} 單元`, score, quizData.length);
                 }
+
+                document.getElementById('quiz-card').classList.add('hidden');
+                document.getElementById('next-btn').classList.add('hidden');
+                document.getElementById('back-to-units-btn').classList.add('hidden');
+                
+                document.getElementById('final-score').innerText = score;
+                document.getElementById('total-questions').innerText = quizData.length;
+                document.getElementById('quiz-result-card').classList.remove('hidden');
+                
+                updateMistakeBadge();
             }
-        }
-
-        function restartCurrentUnit() {
-            if (isCustomQuizMode) {
-                startCustomQuiz();
-            } else if (isMistakeMode) {
-                startMistakeQuiz();
-            } else {
-                startUnitQuiz(currentUnitIdx);
-            }
-        }
-
-        function backToUnitSelection() {
-            document.getElementById('quiz-card').classList.add('hidden');
-            document.getElementById('quiz-result-card').classList.add('hidden');
-            document.getElementById('quiz-top-bar').classList.add('hidden');
-            document.getElementById('unit-selection-card').classList.remove('hidden');
-            renderUnitsList();
-        }
-
-        function saveMistakeToStorage(q) {
-            try {
-                let mistakes = getStoredMistakes();
-                if (!mistakes.some(item => item.question === q.question)) {
-                    mistakes.unshift(q);
-                    localStorage.setItem('wenhua_quiz_mistakes', JSON.stringify(mistakes));
-                    updateMistakeBadge();
-                }
-            } catch (e) {}
         }
 
         function getStoredMistakes() {
@@ -735,9 +589,23 @@
             }
         }
 
-        function updateMistakeBadge() {
-            const mistakes = getStoredMistakes();
-            document.getElementById('mistake-count-badge').innerText = mistakes.length;
+        function saveMistakeToStorage(q) {
+            let mistakes = getStoredMistakes();
+            let qToSave = { ...q, isHandwriting: isHandwritingMode };
+            
+            const exists = mistakes.some(item => item.question === qToSave.question && item.isHandwriting === qToSave.isHandwriting);
+            if (!exists) {
+                mistakes.push(qToSave);
+                localStorage.setItem('wenhua_quiz_mistakes', JSON.stringify(mistakes));
+                updateMistakeBadge();
+            }
+        }
+
+        function removeMistakeFromStorage(q) {
+            let mistakes = getStoredMistakes();
+            mistakes = mistakes.filter(item => item.question !== q.question);
+            localStorage.setItem('wenhua_quiz_mistakes', JSON.stringify(mistakes));
+            updateMistakeBadge();
         }
 
         function clearMistakes() {
@@ -748,46 +616,65 @@
             }
         }
 
+        function updateMistakeBadge() {
+            const count = getStoredMistakes().length;
+            document.getElementById('mistake-count').innerText = count;
+        }
+
         function renderMistakesPage() {
             const mistakes = getStoredMistakes();
             const container = document.getElementById('mistakes-list-container');
+            const startBtn = document.getElementById('start-mistake-btn');
             container.innerHTML = '';
 
             if (mistakes.length === 0) {
-                container.innerHTML = `<div class="text-center py-12 text-slate-400 text-xl font-bold">目前沒有錯題記錄，表現太棒了！ 🎉</div>`;
-                document.getElementById('start-mistake-quiz-btn').classList.add('hidden');
+                container.innerHTML = `<div class="text-center py-12 text-slate-400 text-xl font-bold">目前沒有累積錯題，太棒了！繼續保持！</div>`;
+                startBtn.classList.add('hidden');
                 return;
             }
 
-            document.getElementById('start-mistake-quiz-btn').classList.remove('hidden');
-
-            mistakes.forEach((item, idx) => {
+            startBtn.classList.remove('hidden');
+            mistakes.forEach((q, idx) => {
+                const modeTag = q.isHandwriting ? '<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs ml-2">手寫題</span>' : '';
+                
                 const div = document.createElement('div');
-                div.className = "p-4 rounded-2xl border-2 border-slate-100 bg-slate-50 flex justify-between items-center";
+                div.className = "p-5 rounded-2xl border-2 border-slate-100 bg-slate-50 flex flex-col gap-2";
                 div.innerHTML = `
-                    <div>
-                        <div class="font-bold text-lg text-slate-700">${item.question}</div>
-                        <div class="text-sm text-emerald-600 font-bold mt-1">正確答案：${item.answer}</div>
+                    <div class="flex justify-between items-start">
+                        <span class="font-bold text-indigo-600 text-sm">錯題 #${idx + 1} [${q.category || '字形辨正'}] ${modeTag}</span>
+                        <button onclick="deleteOneMistake('${q.question}')" class="text-rose-500 hover:text-rose-700 text-sm font-bold">刪除此題</button>
                     </div>
-                    <div class="text-xs bg-rose-100 text-rose-700 px-3 py-1 rounded-lg font-bold">錯題 #${idx + 1}</div>
+                    <div class="text-xl font-bold text-slate-700">${q.question}</div>
+                    <div class="text-sm text-slate-500">正確答案：${q.options[q.answer]}</div>
                 `;
                 container.appendChild(div);
             });
         }
 
-        function startMistakeQuiz() {
+        function deleteOneMistake(questionText) {
+            let mistakes = getStoredMistakes();
+            mistakes = mistakes.filter(item => item.question !== questionText);
+            localStorage.setItem('wenhua_quiz_mistakes', JSON.stringify(mistakes));
+            updateMistakeBadge();
+            renderMistakesPage();
+        }
+
+        function startMistakePractice() {
             const mistakes = getStoredMistakes();
             if (mistakes.length === 0) return;
 
             isMistakeMode = true;
-            isCustomQuizMode = false;
-            quizData = mistakes.map(q => prepareChoiceQuestion(q));
-            currentPracticeMode = 'phonetic';
+            isRandomMode = false;
+            quizData = shuffleArray(mistakes);
+            currentIdx = 0;
+            score = 0;
 
             switchMainTab('practice');
-            document.getElementById('library-selection-card').classList.add('hidden');
             document.getElementById('unit-selection-card').classList.add('hidden');
-            initQuizSession();
+            document.getElementById('quiz-result-card').classList.add('hidden');
+            document.getElementById('quiz-card').classList.remove('hidden');
+            document.getElementById('back-to-units-btn').classList.add('hidden');
+            loadQuestion();
         }
 
         function saveHistoryToStorage(title, score, total) {
@@ -834,7 +721,7 @@
                 return;
             }
 
-            history.forEach((item) => {
+            history.forEach((item, idx) => {
                 const percentage = Math.round((item.score / item.total) * 100);
                 let badgeColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
                 if (percentage < 60) badgeColor = "bg-rose-50 text-rose-700 border-rose-200";
@@ -853,108 +740,6 @@
                 `;
                 container.appendChild(div);
             });
-        }
-
-        // ================= 自訂範圍隨機測驗 Modal 控制 =================
-        function openCustomQuizModal() {
-            document.getElementById('custom-quiz-modal').classList.remove('hidden');
-            const badge = document.getElementById('modal-library-badge');
-            badge.innerText = `目前範圍：${currentLibraryType === 'base' ? '校內基礎題庫' : '100-105年全國賽題庫'} (${currentCategoryName})`;
-
-            const quickButtonsContainer = document.getElementById('modal-quick-buttons');
-            const checkboxesContainer = document.getElementById('modal-units-checkboxes');
-            checkboxesContainer.innerHTML = '';
-            quickButtonsContainer.innerHTML = '';
-
-            // 如果是全國賽，動態加入快捷選取按鈕
-            if (currentLibraryType === 'national') {
-                quickButtonsContainer.classList.remove('hidden');
-                
-                // 全選大亂鬥按鈕
-                const allBtn = document.createElement('button');
-                allBtn.type = "button";
-                allBtn.className = "text-xs bg-indigo-600 text-white font-bold px-2.5 py-1 rounded-lg hover:bg-indigo-700";
-                allBtn.innerText = "🔥 全國賽全範圍大亂鬥";
-                allBtn.onclick = () => toggleAllModalUnits(true);
-                quickButtonsContainer.appendChild(allBtn);
-
-                // 依年份建立快捷按鈕 (假設每4個單元為一年)
-                let years = ['100年', '101年', '102年', '103年', '104年', '105年'];
-                years.forEach((yr, yIdx) => {
-                    let yBtn = document.createElement('button');
-                    yBtn.type = "button";
-                    yBtn.className = "text-xs bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded-lg hover:bg-amber-200";
-                    yBtn.innerText = yr;
-                    yBtn.onclick = () => selectUnitsByYear(yIdx);
-                    quickButtonsContainer.appendChild(yBtn);
-                });
-            } else {
-                quickButtonsContainer.classList.add('hidden');
-            }
-
-            unitsList.forEach((_, idx) => {
-                const label = document.createElement('label');
-                label.className = "flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200 text-sm font-bold text-slate-700 cursor-pointer hover:bg-indigo-50";
-                label.innerHTML = `
-                    <input type="checkbox" name="custom-unit-cb" value="${idx}" data-unit-idx="${idx}" checked class="w-4 h-4 text-indigo-600 rounded">
-                    <span>單元 ${idx + 1}</span>
-                `;
-                checkboxesContainer.appendChild(label);
-            });
-        }
-
-        function selectUnitsByYear(yearIdx) {
-            const checkboxes = document.getElementsByName('custom-unit-cb');
-            checkboxes.forEach((cb, idx) => {
-                let start = yearIdx * 4;
-                let end = start + 3;
-                if (idx >= start && idx <= end) {
-                    cb.checked = true;
-                } else {
-                    cb.checked = false;
-                }
-            });
-        }
-
-        function closeCustomQuizModal() {
-            document.getElementById('custom-quiz-modal').classList.add('hidden');
-        }
-
-        function toggleAllModalUnits(selectState) {
-            const checkboxes = document.getElementsByName('custom-unit-cb');
-            checkboxes.forEach(cb => cb.checked = selectState);
-        }
-
-        function startCustomQuiz() {
-            const checkboxes = document.getElementsByName('custom-unit-cb');
-            let selectedUnitIndices = [];
-            checkboxes.forEach(cb => {
-                if (cb.checked) selectedUnitIndices.push(parseInt(cb.value));
-            });
-
-            if (selectedUnitIndices.length === 0) {
-                alert('請至少勾選一個單元！');
-                return;
-            }
-
-            let pool = [];
-            selectedUnitIndices.forEach(uIdx => {
-                pool = pool.concat(unitsList[uIdx]);
-            });
-
-            const countSelect = document.getElementById('custom-quiz-count');
-            const targetCount = parseInt(countSelect.value);
-
-            let shuffledPool = shuffleArray(pool);
-            quizData = shuffledPool.slice(0, Math.min(targetCount, shuffledPool.length));
-            quizData = quizData.map(q => prepareChoiceQuestion(q));
-
-            isCustomQuizMode = true;
-            isMistakeMode = false;
-            currentPracticeMode = 'phonetic';
-
-            closeCustomQuizModal();
-            initQuizSession();
         }
     </script>
 </body>
