@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文華國小五年級 - 國語文競賽線上特訓 v4.3 (歷屆全國賽多年份版)</title>
+    <title>文華國小五年級 - 國語文競賽線上特訓 v4.3 (修正版)</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -12,7 +12,7 @@
     <div class="max-w-4xl mx-auto p-8 w-full mt-8">
         <header class="text-center mb-8">
             <h1 class="text-3xl font-bold text-indigo-600">🏫 文華國小五年級國語文競賽特訓</h1>
-            <p class="text-lg text-slate-500 mt-2">雲端題庫即時同步練習網 v4.3 (歷屆全國賽多年份版)</p>
+            <p class="text-lg text-slate-500 mt-2">雲端題庫即時同步練習網 v4.3 (修正版)</p>
             
             <!-- 主導覽按鈕 -->
             <div class="flex flex-wrap justify-center gap-3 mt-6">
@@ -209,7 +209,7 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby730wJM6SxtCjnu_1abKeIosFmQPNlNDe5znncIpXkHYaBSgTJ9by9KTLvyPQh2Z5QiA/exec";
 
-        let currentMode = 'phonetic'; // 預設模式
+        let currentMode = 'phonetic'; 
         let rawCategoryData = []; 
         let unitsList = [];        
         let currentUnitIdx = 0;   
@@ -259,6 +259,13 @@
             return arr;
         }
 
+        // 統一將模式對應到 Google 試算表的分頁名稱
+        function getSheetName(mode) {
+            if (mode === 'phonetic') return '注音';
+            if (mode === 'character' || mode === 'handwriting') return '國字';
+            return mode; // 像是 '100全國字音', '105全國字形' 等
+        }
+
         async function changeMode(mode, forceRefresh = false) {
             currentMode = mode;
             isMistakeMode = false;
@@ -298,14 +305,7 @@
                 }
             }
 
-            // 對應 Google 試算表的分頁名稱
-            let sheetName = '注音';
-            if (mode === 'character' || mode === 'handwriting') {
-                sheetName = '國字';
-            } else {
-                sheetName = mode; // 例如 '100全國字音', '105全國字形'
-            }
-
+            const sheetName = getSheetName(mode);
             const cacheKey = `wenhua_cache_${sheetName}`;
             let rawData = null;
 
@@ -346,13 +346,7 @@
         }
 
         function refreshCategoryCache() {
-            let sheetName = '注音';
-            if (currentMode === 'character' || currentMode === 'handwriting') {
-                sheetName = '國字';
-            } else {
-                sheetName = currentMode;
-            }
-
+            const sheetName = getSheetName(currentMode);
             localStorage.removeItem(`wenhua_cache_${sheetName}`);
             changeMode(currentMode, true);
         }
@@ -370,7 +364,7 @@
             let modeTitle = '校內注音';
             if (currentMode === 'character') modeTitle = '校內國字';
             else if (currentMode === 'handwriting') modeTitle = '手寫練字';
-            else modeTitle = currentMode; // 顯示如 "100全國字音"
+            else modeTitle = currentMode;
 
             document.getElementById('current-category-title').textContent = `【${modeTitle}特訓】選擇練習單元`;
 
@@ -806,7 +800,7 @@
             } catch (e) {}
         }
 
-        getStoredHistory = function() {
+        function getStoredHistory() {
             try {
                 const data = localStorage.getItem('wenhua_quiz_history');
                 return data ? JSON.parse(data) : [];
