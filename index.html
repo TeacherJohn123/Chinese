@@ -398,7 +398,8 @@
             unitGrid.innerHTML = '';
             
             let modeTitle = '校內注音';
-            if (currentMode === 'character') modeTitle = '校內國字';
+            if (currentMode === 'phonetic') modeTitle = '校內注音';
+            else if (currentMode === 'character') modeTitle = '校內國字';
             else if (currentMode === 'handwriting') modeTitle = '手寫練字';
             else if (currentMode.endsWith('_hw')) modeTitle = currentMode.replace('_hw', ' (手寫自評)');
             else modeTitle = currentMode;
